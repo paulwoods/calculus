@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calc 1 · 08 — Applications of Derivatives</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+
+<style>
+  :root{
+    --bg:        #0a0e17;
+    --bg-grid:   rgba(120,140,180,0.055);
+    --surface:   #111725;
+    --surface-2: #161d2e;
+    --border:    rgba(150,170,210,0.12);
+    --border-strong: rgba(150,170,210,0.22);
+
+    --ink:       #e8eef7;
+    --ink-soft:  #aab4c5;
+    --ink-faint: #6f7b90;
+
+    --poly:  #38bdf8;
+    --rat:   #c084fc;
+    --exp:   #fbbf24;
+    --log:   #fb7185;
+    --trig:  #34d399;
+
+    --maxw: 780px;
+    --radius: 14px;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0 / 32px 32px,
+      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0 / 32px 32px,
+      radial-gradient(1200px 600px at 70% -10%, rgba(251,113,133,0.11), transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, sans-serif;
+    font-size:17px;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .katex{ font-size:1.04em; }
+  .katex-display{ margin:1.3em 0; padding:.4em .2em; overflow-x:auto; overflow-y:hidden; }
+
+  .rail{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; gap:.6rem;
+    padding:.7rem clamp(1rem,4vw,2rem);
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.74rem; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink-faint);
+    background:rgba(10,14,23,0.78);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .rail b{ color:var(--ink-soft); font-weight:500; }
+  .rail .dot{ width:7px;height:7px;border-radius:50%;background:var(--log);box-shadow:0 0 10px var(--log); }
+
+  main{ max-width:var(--maxw); margin:0 auto; padding:0 clamp(1rem,4vw,2rem) 5rem; }
+
+  .hero{ padding:3.2rem 0 1.5rem; }
+  .eyebrow{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.8rem; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--exp);
+    display:flex; align-items:center; gap:.75rem;
+  }
+  .eyebrow .num{
+    font-family:"Space Grotesk", sans-serif;
+    font-size:.95rem; font-weight:700;
+    color:var(--bg); background:var(--exp);
+    padding:.05rem .5rem; border-radius:6px; letter-spacing:.05em;
+  }
+  h1{
+    font-family:"Space Grotesk", sans-serif;
+    font-weight:700; font-size:clamp(2.1rem,6vw,3.3rem);
+    line-height:1.05; letter-spacing:-0.02em;
+    margin:1rem 0 .8rem;
+    background:linear-gradient(100deg,var(--log),var(--exp) 55%,var(--poly));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .lede{
+    color:var(--ink-soft); font-size:1.08rem; max-width:60ch;
+    border-left:2px solid var(--border-strong); padding-left:1rem;
+  }
+
+  figure.plot{
+    margin:2rem 0 0; padding:1rem;
+    background:linear-gradient(180deg,var(--surface),var(--bg));
+    border:1px solid var(--border); border-radius:var(--radius);
+  }
+  figure.plot svg{ width:100%; height:auto; display:block; }
+  .legend{
+    display:flex; flex-wrap:wrap; gap:1.1rem;
+    margin-top:.6rem; padding:0 .3rem;
+    font-family:"IBM Plex Mono", monospace; font-size:.82rem; color:var(--ink-soft);
+  }
+  .legend span{ display:inline-flex; align-items:center; gap:.45rem; }
+  .legend i{ width:22px; height:3px; border-radius:2px; display:inline-block; }
+
+  .curve{ fill:none; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round;
+    filter:drop-shadow(0 0 6px currentColor); }
+  .axis{ stroke:rgba(160,175,205,0.35); stroke-width:1.2; }
+  .tick{ stroke:rgba(160,175,205,0.18); stroke-width:1; }
+
+  @media (prefers-reduced-motion:no-preference){
+    .curve{ stroke-dasharray:1400; stroke-dashoffset:1400; animation:draw 1.6s ease forwards; }
+    .curve.c2{ animation-delay:.35s; }
+    .curve.c3{ animation-delay:.7s; }
+    @keyframes draw{ to{ stroke-dashoffset:0; } }
+  }
+
+  .section-tag{
+    display:flex; align-items:center; gap:.8rem;
+    margin:3.5rem 0 1.2rem;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.78rem; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-faint);
+  }
+  .section-tag::after{ content:""; flex:1; height:1px; background:var(--border); }
+  .section-tag b{ color:var(--ink); font-weight:600; }
+
+  h2{
+    font-family:"Space Grotesk", sans-serif;
+    font-weight:600; font-size:1.02rem; letter-spacing:.02em;
+    margin:2.4rem 0 .6rem; padding-left:.9rem;
+    border-left:3px solid var(--accent, var(--poly));
+    color:var(--ink);
+  }
+  h2 .k{ color:var(--accent, var(--poly)); font-family:"IBM Plex Mono",monospace; font-size:.8rem; margin-right:.4rem; }
+
+  p{ margin:.7rem 0; color:var(--ink); }
+  strong{ color:#fff; font-weight:600; }
+
+  ul.clean{ list-style:none; padding:0; margin:1rem 0; display:grid; gap:.55rem; }
+  ul.clean li{
+    padding:.7rem .9rem; background:var(--surface); border:1px solid var(--border);
+    border-radius:10px; border-left:3px solid var(--fam,var(--poly));
+  }
+  ul.clean li .fam{ font-weight:600; color:var(--fam,var(--poly)); }
+
+  ol.rules{ padding-left:1.2rem; margin:1rem 0; }
+  ol.rules li{ margin:.4rem 0; }
+
+  .callout{
+    margin:2rem 0; padding:1.1rem 1.3rem;
+    background:linear-gradient(120deg, rgba(52,211,153,0.10), rgba(56,189,248,0.06));
+    border:1px solid var(--border-strong); border-radius:var(--radius);
+  }
+  .callout b{ color:var(--trig); }
+
+  .q{
+    margin:1rem 0; background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); overflow:hidden;
+    transition:border-color .2s ease;
+  }
+  .q:hover{ border-color:var(--border-strong); }
+  .q-head{ display:flex; gap:.9rem; padding:1.1rem 1.2rem; }
+  .q-num{
+    flex:none; width:2rem; height:2rem; border-radius:8px;
+    display:grid; place-items:center;
+    font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:.9rem;
+    color:var(--bg); background:var(--qc,var(--poly));
+    box-shadow:0 0 14px -2px var(--qc,var(--poly));
+  }
+  .q-body{ flex:1; }
+  .q-body p{ margin:.2rem 0; }
+
+  details{ border-top:1px solid var(--border); }
+  summary{
+    list-style:none; cursor:pointer; user-select:none;
+    padding:.7rem 1.2rem .7rem 3.1rem;
+    font-family:"IBM Plex Mono",monospace; font-size:.78rem;
+    letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint);
+    display:flex; align-items:center; gap:.5rem;
+    transition:color .15s ease, background .15s ease;
+  }
+  summary::-webkit-details-marker{ display:none; }
+  summary::before{
+    content:"▸"; color:var(--qc,var(--poly)); font-size:.9rem;
+    transition:transform .2s ease;
+  }
+  details[open] summary::before{ transform:rotate(90deg); }
+  summary:hover{ color:var(--ink-soft); background:rgba(255,255,255,0.02); }
+  .solution{ padding:.2rem 1.2rem 1.2rem 3.1rem; color:var(--ink-soft); }
+  .solution p{ margin:.5rem 0; }
+
+  .next{
+    margin-top:3.5rem; padding:1.4rem 1.5rem;
+    display:flex; align-items:center; justify-content:space-between; gap:1rem;
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  }
+  .next .lbl{ font-family:"IBM Plex Mono",monospace; font-size:.72rem; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--ink-faint); }
+  .next .name{ font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:1.15rem; color:var(--exp); }
+  .next .arrow{ color:var(--exp); font-size:1.4rem; }
+
+  a:focus-visible, summary:focus-visible{ outline:2px solid var(--exp); outline-offset:3px; border-radius:4px; }
+
+  @media (max-width:520px){
+    body{ font-size:16px; }
+    .q-head{ padding:.9rem; }
+    .solution{ padding-left:1.2rem; }
+    summary{ padding-left:1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="rail">
+  <span class="dot"></span>
+  <b>Calculus&nbsp;1</b> · Module 08 / 10 · Applications of Derivatives
+</div>
+
+<main>
+
+  <header class="hero">
+    <div class="eyebrow"><span class="num">08</span> Analysis Module</div>
+    <h1>Shape of a Curve</h1>
+    <p class="lede">Critical points, increasing and decreasing, concavity, extrema, and the Mean Value Theorem — reading a function's entire personality from f′ and f″.</p>
+
+    <figure class="plot">
+      <svg viewBox="0 0 600 340" role="img" aria-label="A cubic curve with its local maximum, inflection point, and local minimum marked.">
+        <g class="tick">
+          <line x1="60" y1="40" x2="60" y2="300"/><line x1="140" y1="40" x2="140" y2="300"/>
+          <line x1="220" y1="40" x2="220" y2="300"/><line x1="380" y1="40" x2="380" y2="300"/>
+          <line x1="460" y1="40" x2="460" y2="300"/><line x1="540" y1="40" x2="540" y2="300"/>
+          <line x1="60" y1="60" x2="540" y2="60"/><line x1="60" y1="170" x2="540" y2="170"/>
+          <line x1="60" y1="280" x2="540" y2="280"/>
+        </g>
+        <g class="axis">
+          <line x1="60" y1="300" x2="560" y2="300"/>
+          <line x1="80" y1="30" x2="80" y2="315"/>
+        </g>
+        <path class="curve c1" style="color:var(--log);stroke:var(--log)"
+          d="M 110 260 C 200 40, 250 60, 300 160 C 350 260, 400 280, 500 80"/>
+        <line x1="160" y1="97" x2="240" y2="97" stroke="var(--exp)" stroke-width="2" stroke-dasharray="6 4"/>
+        <line x1="330" y1="228" x2="410" y2="228" stroke="var(--exp)" stroke-width="2" stroke-dasharray="6 4"/>
+        <circle cx="200" cy="97" r="6" fill="var(--exp)" style="filter:drop-shadow(0 0 6px var(--exp))"/>
+        <circle cx="300" cy="160" r="6" fill="var(--trig)" style="filter:drop-shadow(0 0 6px var(--trig))"/>
+        <circle cx="370" cy="228" r="6" fill="var(--exp)" style="filter:drop-shadow(0 0 6px var(--exp))"/>
+        <text x="150" y="72" fill="var(--exp)" font-family="IBM Plex Mono" font-size="14">local max, f′=0</text>
+        <text x="312" y="150" fill="var(--trig)" font-family="IBM Plex Mono" font-size="14">inflection, f″=0</text>
+        <text x="392" y="252" fill="var(--exp)" font-family="IBM Plex Mono" font-size="14">local min, f′=0</text>
+      </svg>
+      <div class="legend"><span><i style="background:var(--log)"></i> f(x)</span>
+        <span><i style="background:var(--exp)"></i> horizontal tangents at extrema</span>
+        <span><i style="background:var(--trig)"></i> concavity flips at the inflection point</span></div>
+    </figure>
+  </header>
+
+  <div class="section-tag"><b>Tutorial</b> · ~1000 words</div>
+
+  <h2 style="--accent:var(--log)"><span class="k">01</span>Critical points</h2>
+  <p>A <strong>critical point</strong> of $f$ is an interior point of the domain where $f'(x) = 0$ or $f'(x)$ doesn't exist. These are the only candidates for local maxima and minima (Fermat's theorem) — a smooth hilltop must have a horizontal tangent, and a corner like $|x|$'s can hide a minimum too. Finding them is step one of every problem in this module: differentiate, set equal to zero, solve, and also list points where the derivative is undefined but the function isn't. Caution: a critical point is only a <em>candidate</em>. $f(x) = x^3$ has $f'(0) = 0$ but no max or min there — the curve just pauses and keeps climbing.</p>
+
+  <h2 style="--accent:var(--exp)"><span class="k">02</span>Increasing, decreasing, and the first derivative test</h2>
+  <p>The sign of $f'$ narrates the function's motion: $f' > 0$ on an interval means $f$ is <strong>increasing</strong> there; $f' < 0$ means decreasing. The critical points chop the number line into intervals; test one point per interval to build a <strong>sign chart</strong>. Then the <strong>First Derivative Test</strong> reads results off the chart: at a critical point $c$,</p>
+  <ul class="clean">
+    <li style="--fam:var(--trig)">$f'$ flips $+$ to $-$ → <span class="fam">local maximum</span> at $c$</li>
+    <li style="--fam:var(--log)">$f'$ flips $-$ to $+$ → <span class="fam">local minimum</span> at $c$</li>
+    <li style="--fam:var(--poly)">no sign change → <span class="fam">neither</span> (an $x^3$-style shelf)</li>
+  </ul>
+  <p>Example: $f(x) = x^3 - 3x$ has $f' = 3x^2 - 3 = 3(x-1)(x+1)$: positive, negative, positive across $-1$ and $1$ — so a local max at $x = -1$ and a local min at $x = 1$.</p>
+
+  <h2 style="--accent:var(--poly)"><span class="k">03</span>Concavity and the second derivative</h2>
+  <p>The second derivative narrates the <em>bending</em>. $f'' > 0$ means the slope is increasing — the graph is <strong>concave up</strong>, cupping like a bowl and lying above its tangent lines. $f'' < 0$ means <strong>concave down</strong>, doming like a hill. An <strong>inflection point</strong> is where concavity actually switches — found among points where $f'' = 0$ or is undefined, but confirmed only by a genuine sign change ($f(x) = x^4$ has $f''(0) = 0$ with no inflection). Concavity has a real-world voice: if revenue is rising but concave down, growth is slowing — the derivative of the derivative is the "rate of the rate."</p>
+
+  <h2 style="--accent:var(--rat)"><span class="k">04</span>The second derivative test</h2>
+  <p>Concavity gives a slicker way to classify critical points. If $f'(c) = 0$, then:</p>
+  <p>$$f''(c) > 0 \;\Rightarrow\; \text{local min} \qquad f''(c) < 0 \;\Rightarrow\; \text{local max} \qquad f''(c) = 0 \;\Rightarrow\; \text{no verdict}$$</p>
+  <p>Mnemonic: concave up holds water (min); concave down sheds it (max). For $f(x) = x^3 - 3x$: $f'' = 6x$, so $f''(-1) = -6 < 0$ (max ✓) and $f''(1) = 6 > 0$ (min ✓) — agreeing with the first derivative test in two lines. When the test is inconclusive ($f'' = 0$), fall back to the sign chart, which never fails.</p>
+
+  <h2 style="--accent:var(--trig)"><span class="k">05</span>Absolute extrema: the closed interval method</h2>
+  <p>Local extrema are hilltops; <strong>absolute</strong> extrema are the highest and lowest points overall. The <strong>Extreme Value Theorem</strong> guarantees both exist when $f$ is continuous on a closed interval $[a,b]$ — the payoff for Module 03's care. Finding them is purely mechanical:</p>
+  <ol class="rules">
+    <li>Find all critical points of $f$ inside $(a, b)$.</li>
+    <li>Evaluate $f$ at every critical point <em>and at both endpoints</em>.</li>
+    <li>Biggest value wins (absolute max), smallest loses (absolute min).</li>
+  </ol>
+  <p>No sign charts, no classification — just a shortlist and a comparison. Forgetting the endpoints is the classic exam giveaway; on $[0, 3]$, the max of $f(x) = x^2$ is at the endpoint $x = 3$, not at any critical point.</p>
+
+  <h2 style="--accent:var(--log)"><span class="k">06</span>The Mean Value Theorem</h2>
+  <p><strong>MVT:</strong> if $f$ is continuous on $[a,b]$ and differentiable on $(a,b)$, then some $c$ in $(a,b)$ satisfies</p>
+  <p>$$f'(c) = \frac{f(b) - f(a)}{b - a}$$</p>
+  <p>Somewhere, the instantaneous rate equals the average rate. If you drove 120 miles in 2 hours, at some instant your speedometer read exactly 60 — that's MVT, and it's how a court could prove speeding from toll timestamps. Its quieter consequences run the whole subject: $f' = 0$ everywhere forces $f$ constant, and $f' = g'$ everywhere forces $f = g + C$ — the fact that makes the "+C" of Module 10 honest. (Rolle's Theorem is the special case $f(a) = f(b)$, giving $f'(c) = 0$.)</p>
+
+  <h2 style="--accent:var(--exp)"><span class="k">07</span>Curve sketching: the synthesis</h2>
+  <p>Everything above assembles into a portrait-drawing procedure. From $f$: domain, intercepts, asymptotes (Module 02's limits at infinity). From $f'$: critical points, increasing/decreasing intervals, local extrema. From $f''$: concavity and inflection points. Then draw — plotting the special points first and connecting them respecting every sign. A degree-3 polynomial with two critical points and one inflection, like the hero graph, is the canonical exercise. Curve sketching looks old-fashioned in a graphing-calculator world, but it's really a comprehension test: can you predict the picture <em>before</em> the machine draws it?</p>
+
+  <h2 style="--accent:var(--poly)"><span class="k">08</span>Reading f from f′ — the exam favorite</h2>
+  <p>Many exam problems hand you the graph of $f'$ (not $f$!) and ask about $f$. Translate mechanically: where $f'$ is <em>positive</em> (above the axis), $f$ rises; where $f'$ <em>crosses</em> the axis downward, $f$ has a local max; where $f'$ itself is <em>increasing</em>, $f$ is concave up. The single most common error is treating the graph of $f'$ as if it were $f$ — reading its peaks as $f$'s peaks. Slow down, ask "which function am I looking at?", and convert sign information only.</p>
+
+  <div class="callout">
+    <p style="margin:0"><b>The portrait protocol.</b> $f'$ zeros and breaks → critical points → sign chart → increasing/decreasing → first derivative test. $f''$ → concavity → inflection points → second derivative test shortcut. Closed interval? Critical points + endpoints, evaluate, compare. And MVT lurks behind any "must there be a moment when…" question.</p>
+  </div>
+
+  <div class="section-tag"><b>Practice</b> · 20 problems · tap to reveal each solution</div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">1</div><div class="q-body">
+      <p>Find all critical points of $f(x) = x^3 - 3x$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$f' = 3x^2 - 3 = 3(x-1)(x+1) = 0 \Rightarrow x = \pm 1$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">2</div><div class="q-body">
+      <p>Find all critical points of $f(x) = x^{2/3}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$f' = \dfrac{2}{3}x^{-1/3}$ — never zero, but undefined at $x = 0$ while $f(0)$ exists. Critical point: $x = 0$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">3</div><div class="q-body">
+      <p>Find the intervals where $f(x) = x^3 - 3x$ is increasing and decreasing.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Sign chart of $3(x-1)(x+1)$: $+$ on $(-\infty,-1)$, $-$ on $(-1,1)$, $+$ on $(1,\infty)$.</p>
+      <p>Increasing on $(-\infty,-1)\cup(1,\infty)$; decreasing on $(-1,1)$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">4</div><div class="q-body">
+      <p>Use the First Derivative Test to classify the critical points of $f(x) = x^3 - 3x$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>At $x=-1$: $f'$ flips $+\to-$ → local max, $f(-1) = 2$.</p>
+      <p>At $x=1$: $f'$ flips $-\to+$ → local min, $f(1) = -2$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">5</div><div class="q-body">
+      <p>Use the Second Derivative Test on the critical points of $f(x) = x^4 - 8x^2$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$f' = 4x^3 - 16x = 4x(x^2-4) = 0 \Rightarrow x = 0, \pm 2$. $f'' = 12x^2 - 16$.</p>
+      <p>$f''(0) = -16 < 0$ → local max at $0$. $f''(\pm 2) = 32 > 0$ → local mins at $\pm 2$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">6</div><div class="q-body">
+      <p>Find the intervals of concavity and inflection points of $f(x) = x^3 - 6x^2 + 5$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$f'' = 6x - 12 = 0$ at $x = 2$; negative before, positive after.</p>
+      <p>Concave down on $(-\infty,2)$, up on $(2,\infty)$; inflection at $(2, -11)$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">7</div><div class="q-body">
+      <p>Show $f(x) = x^4$ has $f''(0) = 0$ but no inflection point at $0$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$f'' = 12x^2 \ge 0$ everywhere — no sign change at $0$, so concavity never flips. ($x=0$ is in fact a local min.)</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">8</div><div class="q-body">
+      <p>Find the absolute max and min of $f(x) = x^3 - 3x^2 + 1$ on $[-1, 4]$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$f' = 3x^2 - 6x = 3x(x-2) = 0 \Rightarrow x = 0, 2$ (both inside).</p>
+      <p>$f(-1) = -3$, $f(0) = 1$, $f(2) = -3$, $f(4) = 17$.</p>
+      <p><strong>Abs max $17$ at $x=4$; abs min $-3$ at $x = -1$ and $x = 2$.</strong></p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">9</div><div class="q-body">
+      <p>Find the absolute extrema of $f(x) = x + \dfrac{4}{x}$ on $[1, 4]$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$f' = 1 - \dfrac{4}{x^2} = 0 \Rightarrow x = 2$ (only $+2$ is in the interval).</p>
+      <p>$f(1) = 5$, $f(2) = 4$, $f(4) = 5$. <strong>Min $4$ at $x=2$; max $5$ at both endpoints.</strong></p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">10</div><div class="q-body">
+      <p>Verify the MVT for $f(x) = x^2$ on $[1, 3]$: find the promised $c$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Average rate: $\dfrac{9 - 1}{3 - 1} = 4$. Set $f'(c) = 2c = 4 \Rightarrow c = 2 \in (1,3)$. ✓</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">11</div><div class="q-body">
+      <p>A driver passes two toll booths 90 miles apart, 75 minutes apart, on a road with a 65 mph limit. Prove they sped.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Average speed $= \dfrac{90}{1.25} = 72$ mph. Position is continuous and differentiable, so MVT gives an instant where the speedometer read exactly $72 > 65$. ∎</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">12</div><div class="q-body">
+      <p>Why does the MVT fail for $f(x) = |x|$ on $[-1, 1]$? (Average rate is $0$, but $f' $ is never $0$.)</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$f$ is not differentiable at $x = 0$, which is inside the interval — the differentiability hypothesis fails, so MVT makes no promise.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">13</div><div class="q-body">
+      <p>If $f'(x) = 0$ for all $x$ in an interval, what is $f$? What if two functions have the same derivative everywhere?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$f$ is constant on the interval (an MVT corollary). Equal derivatives → the functions differ by a constant: $f = g + C$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">14</div><div class="q-body">
+      <p>Sketch-plan $f(x) = \dfrac{x}{x^2 + 1}$: find its critical points, extrema, and end behavior.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$f' = \dfrac{1 - x^2}{(x^2+1)^2} = 0 \Rightarrow x = \pm 1$: local min $\left(-1,-\tfrac12\right)$, local max $\left(1,\tfrac12\right)$.</p>
+      <p>$\lim_{x\to\pm\infty} f = 0$: horizontal asymptote $y = 0$ on both ends — an odd, S-shaped bump.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">15</div><div class="q-body">
+      <p>The graph of $f'$ (not $f$) is positive on $(0, 4)$, crosses zero downward at $x = 4$, and is negative after. What happens to $f$ at $x = 4$?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$f$ increases before $4$ and decreases after → <strong>local maximum</strong> of $f$ at $x = 4$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">16</div><div class="q-body">
+      <p>The graph of $f'$ is increasing on $(2, 7)$. What does that say about $f$ there?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$f'$ increasing means $f'' > 0$: $f$ is <strong>concave up</strong> on $(2,7)$ — regardless of whether $f$ is rising or falling.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">17</div><div class="q-body">
+      <p>Find where $f(x) = xe^{-x}$ is increasing, and its maximum value.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$f' = e^{-x}(1 - x) = 0 \Rightarrow x = 1$; positive before, negative after.</p>
+      <p>Increasing on $(-\infty, 1)$; absolute max $f(1) = \dfrac{1}{e} \approx 0.37$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">18</div><div class="q-body">
+      <p>For $f(x) = x^4 - 4x^3$, find all local extrema and inflection points.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$f' = 4x^3 - 12x^2 = 4x^2(x - 3)$: sign $-,-,+$ across $0, 3$ → no extremum at $0$, local min at $x = 3$ ($f(3) = -27$).</p>
+      <p>$f'' = 12x^2 - 24x = 12x(x-2)$: sign flips at $0$ and $2$ → inflections at $(0,0)$ and $(2,-16)$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">19</div><div class="q-body">
+      <p>Rolle's Theorem: show $f(x) = x^3 - x$ satisfies the hypotheses on $[-1, 1]$ and find every valid $c$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Polynomial → continuous and differentiable; $f(-1) = f(1) = 0$. ✓</p>
+      <p>$f'(c) = 3c^2 - 1 = 0 \Rightarrow c = \pm\dfrac{1}{\sqrt3}$, both in $(-1,1)$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">20</div><div class="q-body">
+      <p>Challenge: a continuous function on $[0,10]$ has $f'(x) > 0$ everywhere except $f'(5) = 0$. Does $f$ have a local max, local min, or neither at $x=5$? Where are its absolute extrema?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>No sign change at $5$ → <strong>neither</strong> (a shelf). $f$ is increasing overall, so abs min at $x=0$ and abs max at $x=10$ — the endpoints.</p>
+    </div></details>
+  </div>
+
+  <a class="next" href="#" onclick="return false;">
+    <div>
+      <div class="lbl">Next module</div>
+      <div class="name">09 · Optimization</div>
+    </div>
+    <div class="arrow">→</div>
+  </a>
+
+</main>
+
+<script>
+  window.addEventListener("DOMContentLoaded", function(){
+    function render(){
+      if (window.renderMathInElement){
+        renderMathInElement(document.body, {
+          delimiters:[
+            {left:"$$", right:"$$", display:true},
+            {left:"$",  right:"$",  display:false},
+            {left:"\\[", right:"\\]", display:true},
+            {left:"\\(", right:"\\)", display:false}
+          ],
+          throwOnError:false
+        });
+      } else {
+        setTimeout(render, 60);
+      }
+    }
+    render();
+  });
+</script>
+</body>
+</html>

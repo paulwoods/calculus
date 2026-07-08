@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calc 1 · 02 — Limits</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+
+<style>
+  :root{
+    --bg:        #0a0e17;
+    --bg-grid:   rgba(120,140,180,0.055);
+    --surface:   #111725;
+    --surface-2: #161d2e;
+    --border:    rgba(150,170,210,0.12);
+    --border-strong: rgba(150,170,210,0.22);
+
+    --ink:       #e8eef7;
+    --ink-soft:  #aab4c5;
+    --ink-faint: #6f7b90;
+
+    --poly:  #38bdf8;
+    --rat:   #c084fc;
+    --exp:   #fbbf24;
+    --log:   #fb7185;
+    --trig:  #34d399;
+
+    --maxw: 780px;
+    --radius: 14px;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0 / 32px 32px,
+      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0 / 32px 32px,
+      radial-gradient(1200px 600px at 70% -10%, rgba(192,132,252,0.10), transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, sans-serif;
+    font-size:17px;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .katex{ font-size:1.04em; }
+  .katex-display{ margin:1.3em 0; padding:.4em .2em; overflow-x:auto; overflow-y:hidden; }
+
+  .rail{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; gap:.6rem;
+    padding:.7rem clamp(1rem,4vw,2rem);
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.74rem; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink-faint);
+    background:rgba(10,14,23,0.78);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .rail b{ color:var(--ink-soft); font-weight:500; }
+  .rail .dot{ width:7px;height:7px;border-radius:50%;background:var(--rat);box-shadow:0 0 10px var(--rat); }
+
+  main{ max-width:var(--maxw); margin:0 auto; padding:0 clamp(1rem,4vw,2rem) 5rem; }
+
+  .hero{ padding:3.2rem 0 1.5rem; }
+  .eyebrow{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.8rem; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--exp);
+    display:flex; align-items:center; gap:.75rem;
+  }
+  .eyebrow .num{
+    font-family:"Space Grotesk", sans-serif;
+    font-size:.95rem; font-weight:700;
+    color:var(--bg); background:var(--exp);
+    padding:.05rem .5rem; border-radius:6px; letter-spacing:.05em;
+  }
+  h1{
+    font-family:"Space Grotesk", sans-serif;
+    font-weight:700; font-size:clamp(2.1rem,6vw,3.3rem);
+    line-height:1.05; letter-spacing:-0.02em;
+    margin:1rem 0 .8rem;
+    background:linear-gradient(100deg,var(--rat),var(--poly) 55%,var(--trig));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .lede{
+    color:var(--ink-soft); font-size:1.08rem; max-width:60ch;
+    border-left:2px solid var(--border-strong); padding-left:1rem;
+  }
+
+  figure.plot{
+    margin:2rem 0 0; padding:1rem;
+    background:linear-gradient(180deg,var(--surface),var(--bg));
+    border:1px solid var(--border); border-radius:var(--radius);
+  }
+  figure.plot svg{ width:100%; height:auto; display:block; }
+  .legend{
+    display:flex; flex-wrap:wrap; gap:1.1rem;
+    margin-top:.6rem; padding:0 .3rem;
+    font-family:"IBM Plex Mono", monospace; font-size:.82rem; color:var(--ink-soft);
+  }
+  .legend span{ display:inline-flex; align-items:center; gap:.45rem; }
+  .legend i{ width:22px; height:3px; border-radius:2px; display:inline-block; }
+
+  .curve{ fill:none; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round;
+    filter:drop-shadow(0 0 6px currentColor); }
+  .axis{ stroke:rgba(160,175,205,0.35); stroke-width:1.2; }
+  .tick{ stroke:rgba(160,175,205,0.18); stroke-width:1; }
+
+  @media (prefers-reduced-motion:no-preference){
+    .curve{ stroke-dasharray:1400; stroke-dashoffset:1400; animation:draw 1.6s ease forwards; }
+    .curve.c2{ animation-delay:.35s; }
+    @keyframes draw{ to{ stroke-dashoffset:0; } }
+  }
+
+  .section-tag{
+    display:flex; align-items:center; gap:.8rem;
+    margin:3.5rem 0 1.2rem;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.78rem; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-faint);
+  }
+  .section-tag::after{ content:""; flex:1; height:1px; background:var(--border); }
+  .section-tag b{ color:var(--ink); font-weight:600; }
+
+  h2{
+    font-family:"Space Grotesk", sans-serif;
+    font-weight:600; font-size:1.02rem; letter-spacing:.02em;
+    margin:2.4rem 0 .6rem; padding-left:.9rem;
+    border-left:3px solid var(--accent, var(--poly));
+    color:var(--ink);
+  }
+  h2 .k{ color:var(--accent, var(--poly)); font-family:"IBM Plex Mono",monospace; font-size:.8rem; margin-right:.4rem; }
+
+  p{ margin:.7rem 0; color:var(--ink); }
+  strong{ color:#fff; font-weight:600; }
+
+  ul.clean{ list-style:none; padding:0; margin:1rem 0; display:grid; gap:.55rem; }
+  ul.clean li{
+    padding:.7rem .9rem; background:var(--surface); border:1px solid var(--border);
+    border-radius:10px; border-left:3px solid var(--fam,var(--poly));
+  }
+  ul.clean li .fam{ font-weight:600; color:var(--fam,var(--poly)); }
+
+  ol.rules{ padding-left:1.2rem; margin:1rem 0; }
+  ol.rules li{ margin:.4rem 0; }
+
+  .callout{
+    margin:2rem 0; padding:1.1rem 1.3rem;
+    background:linear-gradient(120deg, rgba(52,211,153,0.10), rgba(192,132,252,0.06));
+    border:1px solid var(--border-strong); border-radius:var(--radius);
+  }
+  .callout b{ color:var(--trig); }
+
+  .q{
+    margin:1rem 0; background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); overflow:hidden;
+    transition:border-color .2s ease;
+  }
+  .q:hover{ border-color:var(--border-strong); }
+  .q-head{ display:flex; gap:.9rem; padding:1.1rem 1.2rem; }
+  .q-num{
+    flex:none; width:2rem; height:2rem; border-radius:8px;
+    display:grid; place-items:center;
+    font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:.9rem;
+    color:var(--bg); background:var(--qc,var(--poly));
+    box-shadow:0 0 14px -2px var(--qc,var(--poly));
+  }
+  .q-body{ flex:1; }
+  .q-body p{ margin:.2rem 0; }
+
+  details{ border-top:1px solid var(--border); }
+  summary{
+    list-style:none; cursor:pointer; user-select:none;
+    padding:.7rem 1.2rem .7rem 3.1rem;
+    font-family:"IBM Plex Mono",monospace; font-size:.78rem;
+    letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint);
+    display:flex; align-items:center; gap:.5rem;
+    transition:color .15s ease, background .15s ease;
+  }
+  summary::-webkit-details-marker{ display:none; }
+  summary::before{
+    content:"▸"; color:var(--qc,var(--poly)); font-size:.9rem;
+    transition:transform .2s ease;
+  }
+  details[open] summary::before{ transform:rotate(90deg); }
+  summary:hover{ color:var(--ink-soft); background:rgba(255,255,255,0.02); }
+  .solution{ padding:.2rem 1.2rem 1.2rem 3.1rem; color:var(--ink-soft); }
+  .solution p{ margin:.5rem 0; }
+
+  .next{
+    margin-top:3.5rem; padding:1.4rem 1.5rem;
+    display:flex; align-items:center; justify-content:space-between; gap:1rem;
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  }
+  .next .lbl{ font-family:"IBM Plex Mono",monospace; font-size:.72rem; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--ink-faint); }
+  .next .name{ font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:1.15rem; color:var(--exp); }
+  .next .arrow{ color:var(--exp); font-size:1.4rem; }
+
+  a:focus-visible, summary:focus-visible{ outline:2px solid var(--exp); outline-offset:3px; border-radius:4px; }
+
+  @media (max-width:520px){
+    body{ font-size:16px; }
+    .q-head{ padding:.9rem; }
+    .solution{ padding-left:1.2rem; }
+    summary{ padding-left:1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="rail">
+  <span class="dot"></span>
+  <b>Calculus&nbsp;1</b> · Module 02 / 10 · Limits
+</div>
+
+<main>
+
+  <header class="hero">
+    <div class="eyebrow"><span class="num">02</span> Core Concept Module</div>
+    <h1>Limits</h1>
+    <p class="lede">The single idea underneath every derivative and integral: what value is a function <em>approaching</em> — even at points where it's undefined?</p>
+
+    <figure class="plot">
+      <svg viewBox="0 0 600 340" role="img" aria-label="A line with a hole at one point, showing the limit exists even where the function is undefined.">
+        <g class="tick">
+          <line x1="60" y1="40" x2="60" y2="300"/>
+          <line x1="140" y1="40" x2="140" y2="300"/>
+          <line x1="220" y1="40" x2="220" y2="300"/>
+          <line x1="380" y1="40" x2="380" y2="300"/>
+          <line x1="460" y1="40" x2="460" y2="300"/>
+          <line x1="540" y1="40" x2="540" y2="300"/>
+          <line x1="60" y1="60" x2="540" y2="60"/>
+          <line x1="60" y1="140" x2="540" y2="140"/>
+          <line x1="60" y1="220" x2="540" y2="220"/>
+        </g>
+        <g class="axis">
+          <line x1="60" y1="300" x2="560" y2="300"/>
+          <line x1="80" y1="30" x2="80" y2="315"/>
+        </g>
+        <!-- line y = x + 3 with a hole at x = 3 : two segments approaching (300,170) -->
+        <polyline class="curve c1" style="color:var(--rat);stroke:var(--rat)"
+          points="100,270 150,245 200,220 250,195 288,176"/>
+        <polyline class="curve c2" style="color:var(--rat);stroke:var(--rat)"
+          points="312,164 360,140 420,110 480,80 530,55"/>
+        <!-- the hole -->
+        <circle cx="300" cy="170" r="7" fill="var(--bg)" stroke="var(--rat)" stroke-width="2.6"
+          style="filter:drop-shadow(0 0 6px var(--rat))"/>
+        <!-- dashed guides to the hole -->
+        <line x1="300" y1="300" x2="300" y2="178" stroke="var(--exp)" stroke-width="1.4" stroke-dasharray="5 5" opacity=".8"/>
+        <line x1="80" y1="170" x2="292" y2="170" stroke="var(--exp)" stroke-width="1.4" stroke-dasharray="5 5" opacity=".8"/>
+        <!-- approach arrows -->
+        <text x="243" y="322" fill="var(--trig)" font-family="IBM Plex Mono" font-size="15">x→3⁻</text>
+        <text x="318" y="322" fill="var(--trig)" font-family="IBM Plex Mono" font-size="15">x→3⁺</text>
+        <text x="88" y="160" fill="var(--exp)" font-family="IBM Plex Mono" font-size="15">L = 6</text>
+      </svg>
+      <div class="legend">
+        <span><i style="background:var(--rat)"></i> y = (x² − 9)/(x − 3) — undefined at x = 3, yet the limit is 6</span>
+      </div>
+    </figure>
+  </header>
+
+  <!-- ===================== TUTORIAL ===================== -->
+  <div class="section-tag"><b>Tutorial</b> · ~1000 words</div>
+
+  <h2 style="--accent:var(--rat)"><span class="k">01</span>The idea: approaching, not arriving</h2>
+  <p>The statement $\lim\limits_{x \to a} f(x) = L$ means: as $x$ gets arbitrarily close to $a$ (from either side), the outputs $f(x)$ get arbitrarily close to $L$. The crucial subtlety is that the limit <strong>doesn't care what happens at $a$ itself</strong> — only what happens <em>near</em> $a$. The function can be undefined at $a$, or defined with some unrelated value, and the limit can still exist.</p>
+  <p>The hero graph above shows the classic example: $f(x) = \dfrac{x^2 - 9}{x - 3}$ is undefined at $x = 3$ (you'd get $\frac{0}{0}$), but everywhere else it simplifies to $x + 3$. So as $x$ approaches $3$, the outputs approach $6$. The graph is a straight line with a single hole punched out — and the limit is the $y$-value of the hole: $\lim\limits_{x\to 3} \dfrac{x^2-9}{x-3} = 6$.</p>
+
+  <h2 style="--accent:var(--trig)"><span class="k">02</span>One-sided limits</h2>
+  <p>Sometimes a function behaves differently on each side of a point. We write $\lim\limits_{x \to a^-} f(x)$ for the <strong>left-hand limit</strong> (approaching with $x < a$) and $\lim\limits_{x \to a^+} f(x)$ for the <strong>right-hand limit</strong> ($x > a$). The two-sided limit exists <em>if and only if</em> both one-sided limits exist and are equal:</p>
+  <p>$$\lim_{x \to a} f(x) = L \iff \lim_{x \to a^-} f(x) = \lim_{x \to a^+} f(x) = L$$</p>
+  <p>This is the tool for piecewise functions and jump behavior. For example, $f(x) = \dfrac{|x|}{x}$ equals $-1$ for negative $x$ and $+1$ for positive $x$. The left limit at $0$ is $-1$, the right limit is $+1$ — they disagree, so $\lim\limits_{x\to 0}\dfrac{|x|}{x}$ <strong>does not exist</strong> (DNE).</p>
+
+  <h2 style="--accent:var(--poly)"><span class="k">03</span>Limit laws and direct substitution</h2>
+  <p>Limits behave politely with arithmetic: the limit of a sum is the sum of the limits, and the same holds for differences, products, and quotients (as long as the bottom limit isn't zero). The practical payoff is <strong>direct substitution</strong>: for polynomials, and for rational/trig/exponential/log functions <em>at points inside their domains</em>, you can just plug in:</p>
+  <p>$$\lim_{x \to 2}\,(x^2 + 3x - 1) = 4 + 6 - 1 = 9$$</p>
+  <p><strong>Always try substitution first.</strong> If you get a real number, you're done. If you get $\frac{\text{nonzero}}{0}$, you're looking at a vertical asymptote (see §06). If you get $\frac{0}{0}$ — the <strong>indeterminate form</strong> — the answer is hiding and you need algebra.</p>
+
+  <h2 style="--accent:var(--exp)"><span class="k">04</span>Defeating 0/0: factor, cancel, conjugate</h2>
+  <p>An indeterminate form $\frac{0}{0}$ means numerator and denominator share a common factor that vanishes at $a$. Your job is to find it and cancel it. Two workhorse techniques:</p>
+  <ol class="rules">
+    <li><strong>Factor and cancel.</strong> $\lim\limits_{x\to 5}\dfrac{x^2 - 25}{x - 5} = \lim\limits_{x\to 5}\dfrac{(x-5)(x+5)}{x-5} = \lim\limits_{x\to 5}(x+5) = 10$.</li>
+    <li><strong>Multiply by the conjugate</strong> when square roots appear. For $\lim\limits_{x\to 0}\dfrac{\sqrt{x+4}-2}{x}$, multiply top and bottom by $\sqrt{x+4}+2$: the numerator becomes $(x+4)-4 = x$, which cancels the denominator, leaving $\lim\limits_{x\to 0}\dfrac{1}{\sqrt{x+4}+2} = \dfrac{1}{4}$.</li>
+  </ol>
+  <p>After canceling, substitute again. This is why the factoring drills from Module 01 matter — they <em>are</em> the limit technique.</p>
+
+  <h2 style="--accent:var(--log)"><span class="k">05</span>The Squeeze Theorem</h2>
+  <p>If $g(x) \le f(x) \le h(x)$ near $a$, and the outer functions squeeze together — $\lim\limits_{x\to a} g(x) = \lim\limits_{x\to a} h(x) = L$ — then the trapped function must go there too: $\lim\limits_{x\to a} f(x) = L$. The signature application: since $-1 \le \sin\frac{1}{x} \le 1$, we get $-|x| \le x\sin\frac{1}{x} \le |x|$, and both bounds go to $0$, so $\lim\limits_{x\to 0} x\sin\frac{1}{x} = 0$ — even though the function oscillates infinitely fast near zero.</p>
+
+  <h2 style="--accent:var(--rat)"><span class="k">06</span>Infinite limits and vertical asymptotes</h2>
+  <p>When substitution gives $\frac{\text{nonzero}}{0}$, the function blows up. We write $\lim\limits_{x\to a} f(x) = \infty$ (or $-\infty$) to describe <em>how</em> it fails to exist, and the line $x = a$ is a <strong>vertical asymptote</strong>. Determine the sign by checking each side: for $\lim\limits_{x\to 2^+}\dfrac{1}{x-2}$, values just right of $2$ make $x - 2$ a tiny positive number, so the quotient is huge and positive: $+\infty$. From the left it's $-\infty$.</p>
+
+  <h2 style="--accent:var(--trig)"><span class="k">07</span>Limits at infinity and horizontal asymptotes</h2>
+  <p>Now let $x$ itself run off to $\pm\infty$. For rational functions, compare the <strong>degrees</strong> of the top and bottom:</p>
+  <ul class="clean">
+    <li style="--fam:var(--poly)"><span class="fam">Top degree &lt; bottom degree</span> — limit is $0$.</li>
+    <li style="--fam:var(--exp)"><span class="fam">Degrees equal</span> — limit is the ratio of leading coefficients.</li>
+    <li style="--fam:var(--log)"><span class="fam">Top degree &gt; bottom degree</span> — limit is $\pm\infty$ (no horizontal asymptote).</li>
+  </ul>
+  <p>So $\lim\limits_{x\to\infty} \dfrac{3x^2 + x}{5x^2 - 7} = \dfrac{3}{5}$, and $y = \frac{3}{5}$ is a horizontal asymptote. The formal move behind this shortcut: divide top and bottom by the highest power of $x$ in the denominator, and use $\lim\limits_{x\to\infty}\frac{1}{x^n} = 0$.</p>
+
+  <h2 style="--accent:var(--poly)"><span class="k">08</span>Two special trig limits</h2>
+  <p>Memorize these — they power the derivatives of sine and cosine later:</p>
+  <p>$$\lim_{x \to 0} \frac{\sin x}{x} = 1 \qquad\qquad \lim_{x \to 0} \frac{1 - \cos x}{x} = 0$$</p>
+  <p>(Radians required — another reason degrees are banned in calculus.) These stretch further than they look: $\lim\limits_{x\to 0}\dfrac{\sin 5x}{x} = \lim\limits_{x\to 0}\dfrac{\sin 5x}{5x}\cdot 5 = 1 \cdot 5 = 5$. The pattern: match the inside of the sine with the denominator, then account for the constant you introduced.</p>
+
+  <div class="callout">
+    <p style="margin:0"><b>Strategy checklist.</b> (1) Try substitution. (2) Got a number? Done. (3) Got $\frac{\text{nonzero}}{0}$? Vertical asymptote — check signs from each side. (4) Got $\frac{0}{0}$? Factor/cancel or conjugate, then substitute again. (5) $x \to \pm\infty$? Compare degrees. (6) Oscillation trapped between bounds? Squeeze.</p>
+  </div>
+
+  <!-- ===================== PRACTICE ===================== -->
+  <div class="section-tag"><b>Practice</b> · 20 problems · tap to reveal each solution</div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">1</div><div class="q-body">
+      <p>Evaluate $\lim\limits_{x \to 3} (2x^2 - x + 4)$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Polynomial — direct substitution: $2(9) - 3 + 4 = 19$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">2</div><div class="q-body">
+      <p>Evaluate $\lim\limits_{x \to 4} \dfrac{x^2 - 16}{x - 4}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Substitution gives $\frac{0}{0}$. Factor: $\dfrac{(x-4)(x+4)}{x-4} = x + 4$.</p>
+      <p>Limit $= 4 + 4 = 8$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">3</div><div class="q-body">
+      <p>Evaluate $\lim\limits_{x \to -2} \dfrac{x^2 + 5x + 6}{x + 2}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$\frac{0}{0}$. Factor the top: $(x+2)(x+3)$. Cancel: limit of $x + 3$ as $x \to -2$ is $1$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">4</div><div class="q-body">
+      <p>Evaluate $\lim\limits_{x \to 0} \dfrac{\sqrt{x + 9} - 3}{x}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Multiply by the conjugate $\dfrac{\sqrt{x+9}+3}{\sqrt{x+9}+3}$: numerator becomes $(x+9) - 9 = x$.</p>
+      <p>$\lim\limits_{x\to 0}\dfrac{1}{\sqrt{x+9}+3} = \dfrac{1}{6}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">5</div><div class="q-body">
+      <p>Let $f(x) = \begin{cases} x + 1 & x < 2 \\ x^2 - 1 & x \ge 2 \end{cases}$. Find $\lim\limits_{x\to 2^-} f(x)$, $\lim\limits_{x\to 2^+} f(x)$, and $\lim\limits_{x\to 2} f(x)$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Left: $2 + 1 = 3$. Right: $4 - 1 = 3$. Both sides agree, so $\lim\limits_{x\to 2} f(x) = 3$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">6</div><div class="q-body">
+      <p>Let $g(x) = \begin{cases} 3x & x < 1 \\ 5 - x & x \ge 1 \end{cases}$. Does $\lim\limits_{x\to 1} g(x)$ exist?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Left: $3(1) = 3$. Right: $5 - 1 = 4$. The one-sided limits disagree, so the limit <strong>does not exist</strong>.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">7</div><div class="q-body">
+      <p>Evaluate $\lim\limits_{x \to 0} \dfrac{|x|}{x}$, or state that it does not exist.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>For $x < 0$: $\frac{-x}{x} = -1$. For $x > 0$: $\frac{x}{x} = 1$. Sides disagree → <strong>DNE</strong>.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">8</div><div class="q-body">
+      <p>Evaluate $\lim\limits_{x \to 3^+} \dfrac{5}{x - 3}$ and $\lim\limits_{x \to 3^-} \dfrac{5}{x - 3}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>From the right, $x - 3$ is a tiny positive number: $\dfrac{5}{\text{tiny}^+} = +\infty$.</p>
+      <p>From the left, $x - 3$ is tiny negative: $-\infty$. Vertical asymptote at $x = 3$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">9</div><div class="q-body">
+      <p>Evaluate $\lim\limits_{x \to \infty} \dfrac{4x^2 - x + 7}{2x^2 + 5}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Equal degrees → ratio of leading coefficients: $\dfrac{4}{2} = 2$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">10</div><div class="q-body">
+      <p>Evaluate $\lim\limits_{x \to \infty} \dfrac{3x + 1}{x^2 - 4}$ and $\lim\limits_{x \to \infty} \dfrac{x^3 - 2}{6x^2 + x}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>First: top degree $1 <$ bottom degree $2$, so the limit is $0$.</p>
+      <p>Second: top degree $3 >$ bottom degree $2$, so it grows without bound: $+\infty$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">11</div><div class="q-body">
+      <p>Evaluate $\lim\limits_{x \to 0} \dfrac{\sin 4x}{x}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$\dfrac{\sin 4x}{x} = \dfrac{\sin 4x}{4x} \cdot 4 \to 1 \cdot 4 = 4$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">12</div><div class="q-body">
+      <p>Evaluate $\lim\limits_{x \to 0} \dfrac{\sin 3x}{\sin 5x}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Write as $\dfrac{\sin 3x}{3x} \cdot \dfrac{5x}{\sin 5x} \cdot \dfrac{3}{5} \to 1 \cdot 1 \cdot \dfrac{3}{5} = \dfrac{3}{5}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">13</div><div class="q-body">
+      <p>Evaluate $\lim\limits_{x \to 0} \dfrac{1 - \cos x}{x}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>This is the second special trig limit: $0$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">14</div><div class="q-body">
+      <p>Use the Squeeze Theorem to evaluate $\lim\limits_{x \to 0} x^2 \cos\dfrac{1}{x}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Since $-1 \le \cos\frac{1}{x} \le 1$, we have $-x^2 \le x^2\cos\frac{1}{x} \le x^2$.</p>
+      <p>Both bounds → $0$, so the limit is $0$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">15</div><div class="q-body">
+      <p>Evaluate $\lim\limits_{h \to 0} \dfrac{(2 + h)^2 - 4}{h}$. <span style="color:var(--ink-faint)">(This is a derivative in disguise.)</span></p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Expand: $(4 + 4h + h^2) - 4 = 4h + h^2 = h(4 + h)$.</p>
+      <p>Cancel $h$: limit of $4 + h$ is $4$. (It's the slope of $y = x^2$ at $x = 2$.)</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">16</div><div class="q-body">
+      <p>Evaluate $\lim\limits_{x \to 1} \dfrac{\frac{1}{x} - 1}{x - 1}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Combine the top: $\dfrac{1 - x}{x}$. So the expression is $\dfrac{1-x}{x(x-1)} = \dfrac{-(x-1)}{x(x-1)} = \dfrac{-1}{x}$.</p>
+      <p>Limit $= -1$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">17</div><div class="q-body">
+      <p>Given $\lim\limits_{x\to a} f(x) = 5$ and $\lim\limits_{x\to a} g(x) = -2$, evaluate $\lim\limits_{x\to a}\left[3f(x) - g(x)^2\right]$ and $\lim\limits_{x\to a}\dfrac{f(x)}{g(x)}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Limit laws: $3(5) - (-2)^2 = 15 - 4 = 11$; and $\dfrac{5}{-2} = -\dfrac{5}{2}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">18</div><div class="q-body">
+      <p>Find all vertical asymptotes of $f(x) = \dfrac{x + 1}{x^2 - x - 6}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Factor: $x^2 - x - 6 = (x-3)(x+2)$, zero at $x = 3, -2$; the numerator is nonzero at both.</p>
+      <p><strong>Vertical asymptotes:</strong> $x = 3$ and $x = -2$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">19</div><div class="q-body">
+      <p>Trick question: find $\lim\limits_{x \to 2} \dfrac{x^2 - 4}{x^2 - 5x + 6}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$\frac{0}{0}$. Factor both: $\dfrac{(x-2)(x+2)}{(x-2)(x-3)} = \dfrac{x+2}{x-3}$.</p>
+      <p>Substitute: $\dfrac{4}{-1} = -4$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">20</div><div class="q-body">
+      <p>Evaluate $\lim\limits_{x \to \infty} \left(\sqrt{x^2 + 6x} - x\right)$. <span style="color:var(--ink-faint)">(Conjugate trick at infinity — a classic exam finisher.)</span></p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Multiply by $\dfrac{\sqrt{x^2+6x}+x}{\sqrt{x^2+6x}+x}$: top becomes $(x^2 + 6x) - x^2 = 6x$.</p>
+      <p>$\dfrac{6x}{\sqrt{x^2+6x}+x} = \dfrac{6}{\sqrt{1 + 6/x} + 1} \to \dfrac{6}{1 + 1} = 3$.</p>
+    </div></details>
+  </div>
+
+  <a class="next" href="#" onclick="return false;">
+    <div>
+      <div class="lbl">Next module</div>
+      <div class="name">03 · Continuity</div>
+    </div>
+    <div class="arrow">→</div>
+  </a>
+
+</main>
+
+<script>
+  window.addEventListener("DOMContentLoaded", function(){
+    function render(){
+      if (window.renderMathInElement){
+        renderMathInElement(document.body, {
+          delimiters:[
+            {left:"$$", right:"$$", display:true},
+            {left:"$",  right:"$",  display:false},
+            {left:"\\[", right:"\\]", display:true},
+            {left:"\\(", right:"\\)", display:false}
+          ],
+          throwOnError:false
+        });
+      } else {
+        setTimeout(render, 60);
+      }
+    }
+    render();
+  });
+</script>
+</body>
+</html>

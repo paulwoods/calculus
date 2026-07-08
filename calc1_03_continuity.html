@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calc 1 · 03 — Continuity</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+
+<style>
+  :root{
+    --bg:        #0a0e17;
+    --bg-grid:   rgba(120,140,180,0.055);
+    --surface:   #111725;
+    --surface-2: #161d2e;
+    --border:    rgba(150,170,210,0.12);
+    --border-strong: rgba(150,170,210,0.22);
+
+    --ink:       #e8eef7;
+    --ink-soft:  #aab4c5;
+    --ink-faint: #6f7b90;
+
+    --poly:  #38bdf8;
+    --rat:   #c084fc;
+    --exp:   #fbbf24;
+    --log:   #fb7185;
+    --trig:  #34d399;
+
+    --maxw: 780px;
+    --radius: 14px;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0 / 32px 32px,
+      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0 / 32px 32px,
+      radial-gradient(1200px 600px at 70% -10%, rgba(52,211,153,0.10), transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, sans-serif;
+    font-size:17px;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .katex{ font-size:1.04em; }
+  .katex-display{ margin:1.3em 0; padding:.4em .2em; overflow-x:auto; overflow-y:hidden; }
+
+  .rail{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; gap:.6rem;
+    padding:.7rem clamp(1rem,4vw,2rem);
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.74rem; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink-faint);
+    background:rgba(10,14,23,0.78);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .rail b{ color:var(--ink-soft); font-weight:500; }
+  .rail .dot{ width:7px;height:7px;border-radius:50%;background:var(--trig);box-shadow:0 0 10px var(--trig); }
+
+  main{ max-width:var(--maxw); margin:0 auto; padding:0 clamp(1rem,4vw,2rem) 5rem; }
+
+  .hero{ padding:3.2rem 0 1.5rem; }
+  .eyebrow{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.8rem; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--exp);
+    display:flex; align-items:center; gap:.75rem;
+  }
+  .eyebrow .num{
+    font-family:"Space Grotesk", sans-serif;
+    font-size:.95rem; font-weight:700;
+    color:var(--bg); background:var(--exp);
+    padding:.05rem .5rem; border-radius:6px; letter-spacing:.05em;
+  }
+  h1{
+    font-family:"Space Grotesk", sans-serif;
+    font-weight:700; font-size:clamp(2.1rem,6vw,3.3rem);
+    line-height:1.05; letter-spacing:-0.02em;
+    margin:1rem 0 .8rem;
+    background:linear-gradient(100deg,var(--trig),var(--poly) 55%,var(--exp));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .lede{
+    color:var(--ink-soft); font-size:1.08rem; max-width:60ch;
+    border-left:2px solid var(--border-strong); padding-left:1rem;
+  }
+
+  figure.plot{
+    margin:2rem 0 0; padding:1rem;
+    background:linear-gradient(180deg,var(--surface),var(--bg));
+    border:1px solid var(--border); border-radius:var(--radius);
+  }
+  figure.plot svg{ width:100%; height:auto; display:block; }
+  .legend{
+    display:flex; flex-wrap:wrap; gap:1.1rem;
+    margin-top:.6rem; padding:0 .3rem;
+    font-family:"IBM Plex Mono", monospace; font-size:.82rem; color:var(--ink-soft);
+  }
+  .legend span{ display:inline-flex; align-items:center; gap:.45rem; }
+  .legend i{ width:22px; height:3px; border-radius:2px; display:inline-block; }
+
+  .curve{ fill:none; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round;
+    filter:drop-shadow(0 0 6px currentColor); }
+  .axis{ stroke:rgba(160,175,205,0.35); stroke-width:1.2; }
+  .tick{ stroke:rgba(160,175,205,0.18); stroke-width:1; }
+
+  @media (prefers-reduced-motion:no-preference){
+    .curve{ stroke-dasharray:1400; stroke-dashoffset:1400; animation:draw 1.6s ease forwards; }
+    .curve.c2{ animation-delay:.35s; }
+    .curve.c3{ animation-delay:.7s; }
+    @keyframes draw{ to{ stroke-dashoffset:0; } }
+  }
+
+  .section-tag{
+    display:flex; align-items:center; gap:.8rem;
+    margin:3.5rem 0 1.2rem;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.78rem; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-faint);
+  }
+  .section-tag::after{ content:""; flex:1; height:1px; background:var(--border); }
+  .section-tag b{ color:var(--ink); font-weight:600; }
+
+  h2{
+    font-family:"Space Grotesk", sans-serif;
+    font-weight:600; font-size:1.02rem; letter-spacing:.02em;
+    margin:2.4rem 0 .6rem; padding-left:.9rem;
+    border-left:3px solid var(--accent, var(--poly));
+    color:var(--ink);
+  }
+  h2 .k{ color:var(--accent, var(--poly)); font-family:"IBM Plex Mono",monospace; font-size:.8rem; margin-right:.4rem; }
+
+  p{ margin:.7rem 0; color:var(--ink); }
+  strong{ color:#fff; font-weight:600; }
+
+  ul.clean{ list-style:none; padding:0; margin:1rem 0; display:grid; gap:.55rem; }
+  ul.clean li{
+    padding:.7rem .9rem; background:var(--surface); border:1px solid var(--border);
+    border-radius:10px; border-left:3px solid var(--fam,var(--poly));
+  }
+  ul.clean li .fam{ font-weight:600; color:var(--fam,var(--poly)); }
+
+  ol.rules{ padding-left:1.2rem; margin:1rem 0; }
+  ol.rules li{ margin:.4rem 0; }
+
+  .callout{
+    margin:2rem 0; padding:1.1rem 1.3rem;
+    background:linear-gradient(120deg, rgba(52,211,153,0.10), rgba(56,189,248,0.06));
+    border:1px solid var(--border-strong); border-radius:var(--radius);
+  }
+  .callout b{ color:var(--trig); }
+
+  .q{
+    margin:1rem 0; background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); overflow:hidden;
+    transition:border-color .2s ease;
+  }
+  .q:hover{ border-color:var(--border-strong); }
+  .q-head{ display:flex; gap:.9rem; padding:1.1rem 1.2rem; }
+  .q-num{
+    flex:none; width:2rem; height:2rem; border-radius:8px;
+    display:grid; place-items:center;
+    font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:.9rem;
+    color:var(--bg); background:var(--qc,var(--poly));
+    box-shadow:0 0 14px -2px var(--qc,var(--poly));
+  }
+  .q-body{ flex:1; }
+  .q-body p{ margin:.2rem 0; }
+
+  details{ border-top:1px solid var(--border); }
+  summary{
+    list-style:none; cursor:pointer; user-select:none;
+    padding:.7rem 1.2rem .7rem 3.1rem;
+    font-family:"IBM Plex Mono",monospace; font-size:.78rem;
+    letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint);
+    display:flex; align-items:center; gap:.5rem;
+    transition:color .15s ease, background .15s ease;
+  }
+  summary::-webkit-details-marker{ display:none; }
+  summary::before{
+    content:"▸"; color:var(--qc,var(--poly)); font-size:.9rem;
+    transition:transform .2s ease;
+  }
+  details[open] summary::before{ transform:rotate(90deg); }
+  summary:hover{ color:var(--ink-soft); background:rgba(255,255,255,0.02); }
+  .solution{ padding:.2rem 1.2rem 1.2rem 3.1rem; color:var(--ink-soft); }
+  .solution p{ margin:.5rem 0; }
+
+  .next{
+    margin-top:3.5rem; padding:1.4rem 1.5rem;
+    display:flex; align-items:center; justify-content:space-between; gap:1rem;
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  }
+  .next .lbl{ font-family:"IBM Plex Mono",monospace; font-size:.72rem; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--ink-faint); }
+  .next .name{ font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:1.15rem; color:var(--poly); }
+  .next .arrow{ color:var(--poly); font-size:1.4rem; }
+
+  a:focus-visible, summary:focus-visible{ outline:2px solid var(--exp); outline-offset:3px; border-radius:4px; }
+
+  @media (max-width:520px){
+    body{ font-size:16px; }
+    .q-head{ padding:.9rem; }
+    .solution{ padding-left:1.2rem; }
+    summary{ padding-left:1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="rail">
+  <span class="dot"></span>
+  <b>Calculus&nbsp;1</b> · Module 03 / 10 · Continuity
+</div>
+
+<main>
+
+  <header class="hero">
+    <div class="eyebrow"><span class="num">03</span> Core Concept Module</div>
+    <h1>Continuity</h1>
+    <p class="lede">A function is continuous where its graph has no breaks — and that one property is what makes the big theorems of calculus work.</p>
+
+    <figure class="plot">
+      <svg viewBox="0 0 600 340" role="img" aria-label="A curve with a jump discontinuity: the left branch ends at an open circle, the right branch begins at a filled circle higher up.">
+        <g class="tick">
+          <line x1="60" y1="40" x2="60" y2="300"/><line x1="140" y1="40" x2="140" y2="300"/>
+          <line x1="220" y1="40" x2="220" y2="300"/><line x1="380" y1="40" x2="380" y2="300"/>
+          <line x1="460" y1="40" x2="460" y2="300"/><line x1="540" y1="40" x2="540" y2="300"/>
+          <line x1="60" y1="60" x2="540" y2="60"/><line x1="60" y1="140" x2="540" y2="140"/>
+          <line x1="60" y1="220" x2="540" y2="220"/>
+        </g>
+        <g class="axis">
+          <line x1="60" y1="300" x2="560" y2="300"/>
+          <line x1="80" y1="30" x2="80" y2="315"/>
+        </g>
+        <polyline class="curve c1" style="color:var(--trig);stroke:var(--trig)"
+          points="100,260 150,240 200,226 250,220 290,218"/>
+        <polyline class="curve c2" style="color:var(--log);stroke:var(--log)"
+          points="310,120 350,116 400,120 450,134 510,160"/>
+        <circle cx="300" cy="218" r="7" fill="var(--bg)" stroke="var(--trig)" stroke-width="2.6"
+          style="filter:drop-shadow(0 0 6px var(--trig))"/>
+        <circle cx="300" cy="120" r="7" fill="var(--log)" stroke="var(--log)" stroke-width="2.6"
+          style="filter:drop-shadow(0 0 6px var(--log))"/>
+        <line x1="300" y1="300" x2="300" y2="128" stroke="var(--exp)" stroke-width="1.4" stroke-dasharray="5 5" opacity=".8"/>
+        <text x="308" y="322" fill="var(--exp)" font-family="IBM Plex Mono" font-size="15">x = a</text>
+        <text x="150" y="200" fill="var(--trig)" font-family="IBM Plex Mono" font-size="14">left limit</text>
+        <text x="380" y="100" fill="var(--log)" font-family="IBM Plex Mono" font-size="14">f(a) and right limit</text>
+      </svg>
+      <div class="legend"><span><i style="background:var(--trig)"></i> jump discontinuity — the one-sided limits disagree, so the pen has to lift</span></div>
+    </figure>
+  </header>
+
+  <div class="section-tag"><b>Tutorial</b> · ~1000 words</div>
+
+  <h2 style="--accent:var(--trig)"><span class="k">01</span>The three-part definition</h2>
+  <p>A function $f$ is <strong>continuous at $x = a$</strong> when three things hold, and each can fail independently:</p>
+  <ol class="rules">
+    <li>$f(a)$ is <strong>defined</strong> — the point exists.</li>
+    <li>$\lim\limits_{x \to a} f(x)$ <strong>exists</strong> — both one-sided limits agree.</li>
+    <li>$\lim\limits_{x \to a} f(x) = f(a)$ — the limit equals the actual value.</li>
+  </ol>
+  <p>The intuition is exactly what you'd guess: you can draw the graph through $x = a$ <strong>without lifting your pen</strong>. Condition 3 is the one students forget to check — a function can be defined at $a$ and have a limit at $a$, yet be discontinuous because the two don't match. Checking continuity is literally checking these three boxes in order, and exam problems are graded that way.</p>
+
+  <h2 style="--accent:var(--log)"><span class="k">02</span>The three ways continuity fails</h2>
+  <p>Each failed condition produces its own species of discontinuity:</p>
+  <ul class="clean">
+    <li style="--fam:var(--poly)"><span class="fam">Removable (hole)</span> — the limit exists but $f(a)$ is undefined or mismatched. Example: $\dfrac{x^2-9}{x-3}$ at $x=3$. One point is wrong; everything else is fine.</li>
+    <li style="--fam:var(--log)"><span class="fam">Jump</span> — both one-sided limits exist but disagree (the hero graph above). Typical of piecewise functions like $\dfrac{|x|}{x}$.</li>
+    <li style="--fam:var(--exp)"><span class="fam">Infinite</span> — the function blows up to $\pm\infty$; a vertical asymptote, like $\dfrac{1}{x-2}$ at $x=2$.</li>
+  </ul>
+  <p>The names matter: "removable" means you could <em>repair</em> the function by redefining a single point. Jumps and asymptotes can't be patched — no single value fixes them.</p>
+
+  <h2 style="--accent:var(--poly)"><span class="k">03</span>Where the familiar functions are continuous</h2>
+  <p>Good news: almost everything you work with is continuous <strong>on its domain</strong>. Polynomials are continuous everywhere. Rational functions are continuous except where the denominator is zero. Root, exponential, logarithmic, and trig functions are continuous at every point of their domains. Better still, continuity survives arithmetic: sums, differences, products, quotients (where defined), and <strong>compositions</strong> of continuous functions are continuous.</p>
+  <p>The practical consequence: to find the discontinuities of a typical function, just find where its domain breaks — denominators hitting zero, even roots of negatives, logs of non-positives. That is why the domain drills in Module 01 keep paying rent.</p>
+
+  <h2 style="--accent:var(--exp)"><span class="k">04</span>Repairing a removable discontinuity</h2>
+  <p>If $\lim\limits_{x\to a} f(x) = L$ exists but $f(a)$ is missing or wrong, define (or redefine) $f(a) = L$ and the function becomes continuous there. Example: $f(x) = \dfrac{x^2 - 4}{x - 2}$ is undefined at $2$, but the limit there is $4$, so the repaired function</p>
+  <p>$$g(x) = \begin{cases} \dfrac{x^2-4}{x-2} & x \ne 2 \\[4pt] 4 & x = 2 \end{cases}$$</p>
+  <p>is continuous everywhere. This "fill in the hole with the limit" move is a standard exam question and a preview of how mathematicians extend functions.</p>
+
+  <h2 style="--accent:var(--rat)"><span class="k">05</span>Making piecewise functions continuous</h2>
+  <p>The classic problem: find the constant $k$ that glues two pieces together. The recipe is always the same — set the two one-sided limits at the seam equal to each other (and to the function's value there), then solve for $k$. For</p>
+  <p>$$f(x) = \begin{cases} kx + 1 & x < 2 \\ x^2 & x \ge 2 \end{cases}$$</p>
+  <p>continuity at $x = 2$ requires $\lim\limits_{x\to 2^-} f(x) = \lim\limits_{x\to 2^+} f(x)$, i.e. $2k + 1 = 4$, so $k = \tfrac{3}{2}$. Two unknown constants means two seams (or one seam plus another condition) and a small system of equations — same idea, more algebra.</p>
+
+  <h2 style="--accent:var(--trig)"><span class="k">06</span>Continuity on intervals</h2>
+  <p>A function is continuous on an open interval $(a,b)$ if it's continuous at every point inside. On a <strong>closed</strong> interval $[a,b]$ we only ask for one-sided continuity at the endpoints: right-continuity at $a$ ($\lim_{x\to a^+} f(x) = f(a)$) and left-continuity at $b$. That's why $\sqrt{x}$ counts as continuous on $[0, \infty)$ even though it has no left side at $0$. Closed-interval continuity is the precise hypothesis that the big theorems below demand — and the Extreme Value Theorem in Module 08 will demand it again.</p>
+
+  <h2 style="--accent:var(--poly)"><span class="k">07</span>The Intermediate Value Theorem</h2>
+  <p>Here's the payoff for all this care. <strong>IVT:</strong> if $f$ is continuous on $[a,b]$ and $N$ is any value between $f(a)$ and $f(b)$, then there is at least one $c$ in $(a,b)$ with $f(c) = N$. A continuous function can't skip values — to get from one height to another, it must pass through everything in between.</p>
+  <p>The killer application is <strong>proving roots exist</strong>. Take $f(x) = x^3 + x - 1$. Then $f(0) = -1 < 0$ and $f(1) = 1 > 0$. Since $f$ is continuous (it's a polynomial) and $0$ lies between $-1$ and $1$, IVT guarantees some $c$ in $(0,1)$ with $f(c) = 0$. You've proven a root exists without finding it — which is exactly what the theorem is for. Note what IVT does <em>not</em> say: it doesn't find $c$, and it doesn't say $c$ is unique.</p>
+
+  <h2 style="--accent:var(--log)"><span class="k">08</span>Why continuity matters for what's next</h2>
+  <p>Continuity is the admission ticket for nearly every major theorem ahead. Differentiability (Module 04) is a <em>stronger</em> condition: every differentiable function is continuous, but not conversely — $|x|$ is continuous at $0$ yet has no derivative there. The Extreme Value Theorem needs continuity on a closed interval to promise a max and min. The Mean Value Theorem needs it. The definite integral (Module 10) is guaranteed to exist for continuous functions. When a theorem fails in a homework problem, the first thing to check is whether a continuity hypothesis was quietly violated.</p>
+
+  <div class="callout">
+    <p style="margin:0"><b>Checking continuity at a point, in exam order.</b> (1) Is $f(a)$ defined? (2) Do the one-sided limits both exist and agree? (3) Does the limit equal $f(a)$? First check that fails names the discontinuity: no value or mismatched value with a limit → removable; disagreeing one-sided limits → jump; unbounded → infinite.</p>
+  </div>
+
+  <div class="section-tag"><b>Practice</b> · 20 problems · tap to reveal each solution</div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">1</div><div class="q-body">
+      <p>Using the three-part definition, show that $f(x) = x^2 + 2x$ is continuous at $x = 1$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$f(1) = 3$ (defined). $\lim\limits_{x\to 1}(x^2+2x) = 3$ by substitution (exists). They're equal → continuous.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">2</div><div class="q-body">
+      <p>Find and classify all discontinuities of $f(x) = \dfrac{x^2 - 1}{x - 1}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Factor: $\dfrac{(x-1)(x+1)}{x-1} = x+1$ for $x \ne 1$. Limit at $1$ is $2$ but $f(1)$ is undefined.</p>
+      <p><strong>Removable discontinuity at $x = 1$.</strong></p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">3</div><div class="q-body">
+      <p>Find and classify all discontinuities of $g(x) = \dfrac{x + 3}{x^2 - 4}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Denominator zero at $x = \pm 2$; numerator nonzero at both, so the function blows up.</p>
+      <p><strong>Infinite discontinuities (vertical asymptotes) at $x = 2$ and $x = -2$.</strong></p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">4</div><div class="q-body">
+      <p>Classify the discontinuity of $f(x) = \dfrac{|x - 5|}{x - 5}$ at $x = 5$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Left limit: $-1$. Right limit: $+1$. Both exist but disagree.</p>
+      <p><strong>Jump discontinuity at $x = 5$.</strong></p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">5</div><div class="q-body">
+      <p>Find $k$ so that $f(x) = \begin{cases} kx + 1 & x < 2 \\ x^2 & x \ge 2 \end{cases}$ is continuous everywhere.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Match at the seam: $2k + 1 = 4 \Rightarrow k = \dfrac{3}{2}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">6</div><div class="q-body">
+      <p>Find $c$ so that $g(x) = \begin{cases} x^2 - c & x \le 3 \\ 2cx + 1 & x > 3 \end{cases}$ is continuous at $x = 3$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$9 - c = 6c + 1 \Rightarrow 8 = 7c \Rightarrow c = \dfrac{8}{7}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">7</div><div class="q-body">
+      <p>Is $f(x) = \begin{cases} \dfrac{x^2 - 16}{x - 4} & x \ne 4 \\ 6 & x = 4 \end{cases}$ continuous at $x = 4$? If not, classify and repair.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Limit: $\lim\limits_{x\to 4}(x+4) = 8$, but $f(4) = 6$. Limit exists yet mismatches the value.</p>
+      <p><strong>Removable</strong> — redefine $f(4) = 8$ to repair.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">8</div><div class="q-body">
+      <p>Where is $f(x) = \dfrac{\sqrt{x + 1}}{x - 3}$ continuous?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Need $x \ge -1$ for the root and $x \ne 3$ for the denominator.</p>
+      <p><strong>Continuous on $[-1, 3) \cup (3, \infty)$.</strong></p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">9</div><div class="q-body">
+      <p>Use the IVT to show $f(x) = x^3 + x - 1$ has a root in $(0, 1)$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$f$ is a polynomial, hence continuous on $[0,1]$. $f(0) = -1 < 0$ and $f(1) = 1 > 0$.</p>
+      <p>Since $0$ lies between $f(0)$ and $f(1)$, IVT gives $c \in (0,1)$ with $f(c) = 0$. ∎</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">10</div><div class="q-body">
+      <p>Use the IVT to show $\cos x = x$ has a solution in $(0, 1)$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Let $h(x) = \cos x - x$, continuous everywhere. $h(0) = 1 > 0$; $h(1) = \cos 1 - 1 \approx -0.46 < 0$.</p>
+      <p>IVT gives $c \in (0,1)$ with $h(c) = 0$, i.e. $\cos c = c$. ∎</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">11</div><div class="q-body">
+      <p>True or false: if $f(1) = -2$ and $f(5) = 7$, then $f$ must equal $0$ somewhere in $(1, 5)$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p><strong>False as stated</strong> — IVT requires continuity. If $f$ is continuous on $[1,5]$, then true; without continuity $f$ can jump over $0$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">12</div><div class="q-body">
+      <p>Determine where $f(x) = \dfrac{x^2 + x - 6}{x^2 - 9}$ has a removable discontinuity and where it has an asymptote.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Factor: $\dfrac{(x+3)(x-2)}{(x+3)(x-3)}$. The factor $(x+3)$ cancels → <strong>removable at $x = -3$</strong> (limit $= \tfrac{-5}{-6} = \tfrac{5}{6}$).</p>
+      <p>$(x - 3)$ does not cancel → <strong>infinite discontinuity at $x = 3$</strong>.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">13</div><div class="q-body">
+      <p>Is $f(x) = |x|$ continuous at $x = 0$?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Yes. Left and right limits are both $0$, and $f(0) = 0$. (It's <em>differentiability</em> that fails at $0$ — coming in Module 04.)</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">14</div><div class="q-body">
+      <p>Find the values of $x$ where $f(x) = \tan x$ is discontinuous, and classify them.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$\tan x = \dfrac{\sin x}{\cos x}$ fails where $\cos x = 0$: $x = \dfrac{\pi}{2} + n\pi$ for integer $n$.</p>
+      <p>The function is unbounded there → <strong>infinite discontinuities</strong>.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">15</div><div class="q-body">
+      <p>Let $f(x) = \begin{cases} \dfrac{\sin x}{x} & x \ne 0 \\ k & x = 0 \end{cases}$. What value of $k$ makes $f$ continuous at $0$?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>The special limit gives $\lim\limits_{x\to 0}\dfrac{\sin x}{x} = 1$, so $k = 1$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">16</div><div class="q-body">
+      <p>Find $a$ and $b$ so that $f(x) = \begin{cases} 2x & x < 1 \\ ax + b & 1 \le x < 3 \\ x^2 - 1 & x \ge 3 \end{cases}$ is continuous everywhere.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Seam at $1$: $a + b = 2$. Seam at $3$: $3a + b = 8$.</p>
+      <p>Subtract: $2a = 6 \Rightarrow a = 3$, then $b = -1$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">17</div><div class="q-body">
+      <p>A continuous function has $f(-2) = 4$ and $f(3) = 4$. Must there be a $c$ with $f(c) = 0$? Must there be one with $f(c) = 4.5$?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Neither is guaranteed. IVT only promises values <strong>between</strong> $f(-2) = 4$ and $f(3) = 4$ — that's just the single value $4$. The function could stay above $0$ the whole way, and nothing forces it to reach $4.5$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">18</div><div class="q-body">
+      <p>Where is $f(x) = \ln(x - 2) + \sqrt{10 - x}$ continuous?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Log needs $x > 2$; root needs $x \le 10$. Both pieces are continuous on their domains, and a sum of continuous functions is continuous.</p>
+      <p><strong>Continuous on $(2, 10]$.</strong></p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">19</div><div class="q-body">
+      <p>Show that $x^5 - 3x^2 + 1 = 0$ has at least <em>two</em> solutions in $[-1, 1]$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$f(-1) = -1 - 3 + 1 = -3 < 0$; $f(0) = 1 > 0$; $f(1) = 1 - 3 + 1 = -1 < 0$.</p>
+      <p>IVT on $[-1, 0]$ gives one root; IVT on $[0, 1]$ gives another. Two sign changes → two roots. ∎</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">20</div><div class="q-body">
+      <p>Challenge: $f(x) = \begin{cases} x^2 & x \text{ rational} \\ 0 & x \text{ irrational} \end{cases}$. At which single point is $f$ continuous?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Only at $x = 0$. Near $0$, both branch values ($x^2$ and $0$) squeeze to $0 = f(0)$.</p>
+      <p>At any $a \ne 0$, rationals give values near $a^2 \ne 0$ while irrationals give $0$ — no limit exists.</p>
+    </div></details>
+  </div>
+
+  <a class="next" href="#" onclick="return false;">
+    <div>
+      <div class="lbl">Next module</div>
+      <div class="name">04 · The Derivative (Definition)</div>
+    </div>
+    <div class="arrow">→</div>
+  </a>
+
+</main>
+
+<script>
+  window.addEventListener("DOMContentLoaded", function(){
+    function render(){
+      if (window.renderMathInElement){
+        renderMathInElement(document.body, {
+          delimiters:[
+            {left:"$$", right:"$$", display:true},
+            {left:"$",  right:"$",  display:false},
+            {left:"\\[", right:"\\]", display:true},
+            {left:"\\(", right:"\\)", display:false}
+          ],
+          throwOnError:false
+        });
+      } else {
+        setTimeout(render, 60);
+      }
+    }
+    render();
+  });
+</script>
+</body>
+</html>

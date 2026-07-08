@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calc 1 · 06 — Derivatives of Special Functions</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+
+<style>
+  :root{
+    --bg:        #0a0e17;
+    --bg-grid:   rgba(120,140,180,0.055);
+    --surface:   #111725;
+    --surface-2: #161d2e;
+    --border:    rgba(150,170,210,0.12);
+    --border-strong: rgba(150,170,210,0.22);
+
+    --ink:       #e8eef7;
+    --ink-soft:  #aab4c5;
+    --ink-faint: #6f7b90;
+
+    --poly:  #38bdf8;
+    --rat:   #c084fc;
+    --exp:   #fbbf24;
+    --log:   #fb7185;
+    --trig:  #34d399;
+
+    --maxw: 780px;
+    --radius: 14px;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0 / 32px 32px,
+      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0 / 32px 32px,
+      radial-gradient(1200px 600px at 70% -10%, rgba(52,211,153,0.10), transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, sans-serif;
+    font-size:17px;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .katex{ font-size:1.04em; }
+  .katex-display{ margin:1.3em 0; padding:.4em .2em; overflow-x:auto; overflow-y:hidden; }
+
+  .rail{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; gap:.6rem;
+    padding:.7rem clamp(1rem,4vw,2rem);
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.74rem; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink-faint);
+    background:rgba(10,14,23,0.78);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .rail b{ color:var(--ink-soft); font-weight:500; }
+  .rail .dot{ width:7px;height:7px;border-radius:50%;background:var(--trig);box-shadow:0 0 10px var(--trig); }
+
+  main{ max-width:var(--maxw); margin:0 auto; padding:0 clamp(1rem,4vw,2rem) 5rem; }
+
+  .hero{ padding:3.2rem 0 1.5rem; }
+  .eyebrow{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.8rem; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--exp);
+    display:flex; align-items:center; gap:.75rem;
+  }
+  .eyebrow .num{
+    font-family:"Space Grotesk", sans-serif;
+    font-size:.95rem; font-weight:700;
+    color:var(--bg); background:var(--exp);
+    padding:.05rem .5rem; border-radius:6px; letter-spacing:.05em;
+  }
+  h1{
+    font-family:"Space Grotesk", sans-serif;
+    font-weight:700; font-size:clamp(2.1rem,6vw,3.3rem);
+    line-height:1.05; letter-spacing:-0.02em;
+    margin:1rem 0 .8rem;
+    background:linear-gradient(100deg,var(--trig),var(--exp) 55%,var(--rat));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .lede{
+    color:var(--ink-soft); font-size:1.08rem; max-width:60ch;
+    border-left:2px solid var(--border-strong); padding-left:1rem;
+  }
+
+  figure.plot{
+    margin:2rem 0 0; padding:1rem;
+    background:linear-gradient(180deg,var(--surface),var(--bg));
+    border:1px solid var(--border); border-radius:var(--radius);
+  }
+  figure.plot svg{ width:100%; height:auto; display:block; }
+  .legend{
+    display:flex; flex-wrap:wrap; gap:1.1rem;
+    margin-top:.6rem; padding:0 .3rem;
+    font-family:"IBM Plex Mono", monospace; font-size:.82rem; color:var(--ink-soft);
+  }
+  .legend span{ display:inline-flex; align-items:center; gap:.45rem; }
+  .legend i{ width:22px; height:3px; border-radius:2px; display:inline-block; }
+
+  .curve{ fill:none; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round;
+    filter:drop-shadow(0 0 6px currentColor); }
+  .axis{ stroke:rgba(160,175,205,0.35); stroke-width:1.2; }
+  .tick{ stroke:rgba(160,175,205,0.18); stroke-width:1; }
+
+  @media (prefers-reduced-motion:no-preference){
+    .curve{ stroke-dasharray:1400; stroke-dashoffset:1400; animation:draw 1.6s ease forwards; }
+    .curve.c2{ animation-delay:.35s; }
+    .curve.c3{ animation-delay:.7s; }
+    @keyframes draw{ to{ stroke-dashoffset:0; } }
+  }
+
+  .section-tag{
+    display:flex; align-items:center; gap:.8rem;
+    margin:3.5rem 0 1.2rem;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.78rem; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-faint);
+  }
+  .section-tag::after{ content:""; flex:1; height:1px; background:var(--border); }
+  .section-tag b{ color:var(--ink); font-weight:600; }
+
+  h2{
+    font-family:"Space Grotesk", sans-serif;
+    font-weight:600; font-size:1.02rem; letter-spacing:.02em;
+    margin:2.4rem 0 .6rem; padding-left:.9rem;
+    border-left:3px solid var(--accent, var(--poly));
+    color:var(--ink);
+  }
+  h2 .k{ color:var(--accent, var(--poly)); font-family:"IBM Plex Mono",monospace; font-size:.8rem; margin-right:.4rem; }
+
+  p{ margin:.7rem 0; color:var(--ink); }
+  strong{ color:#fff; font-weight:600; }
+
+  ul.clean{ list-style:none; padding:0; margin:1rem 0; display:grid; gap:.55rem; }
+  ul.clean li{
+    padding:.7rem .9rem; background:var(--surface); border:1px solid var(--border);
+    border-radius:10px; border-left:3px solid var(--fam,var(--poly));
+  }
+  ul.clean li .fam{ font-weight:600; color:var(--fam,var(--poly)); }
+
+  ol.rules{ padding-left:1.2rem; margin:1rem 0; }
+  ol.rules li{ margin:.4rem 0; }
+
+  .callout{
+    margin:2rem 0; padding:1.1rem 1.3rem;
+    background:linear-gradient(120deg, rgba(52,211,153,0.10), rgba(56,189,248,0.06));
+    border:1px solid var(--border-strong); border-radius:var(--radius);
+  }
+  .callout b{ color:var(--trig); }
+
+  .q{
+    margin:1rem 0; background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); overflow:hidden;
+    transition:border-color .2s ease;
+  }
+  .q:hover{ border-color:var(--border-strong); }
+  .q-head{ display:flex; gap:.9rem; padding:1.1rem 1.2rem; }
+  .q-num{
+    flex:none; width:2rem; height:2rem; border-radius:8px;
+    display:grid; place-items:center;
+    font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:.9rem;
+    color:var(--bg); background:var(--qc,var(--poly));
+    box-shadow:0 0 14px -2px var(--qc,var(--poly));
+  }
+  .q-body{ flex:1; }
+  .q-body p{ margin:.2rem 0; }
+
+  details{ border-top:1px solid var(--border); }
+  summary{
+    list-style:none; cursor:pointer; user-select:none;
+    padding:.7rem 1.2rem .7rem 3.1rem;
+    font-family:"IBM Plex Mono",monospace; font-size:.78rem;
+    letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint);
+    display:flex; align-items:center; gap:.5rem;
+    transition:color .15s ease, background .15s ease;
+  }
+  summary::-webkit-details-marker{ display:none; }
+  summary::before{
+    content:"▸"; color:var(--qc,var(--poly)); font-size:.9rem;
+    transition:transform .2s ease;
+  }
+  details[open] summary::before{ transform:rotate(90deg); }
+  summary:hover{ color:var(--ink-soft); background:rgba(255,255,255,0.02); }
+  .solution{ padding:.2rem 1.2rem 1.2rem 3.1rem; color:var(--ink-soft); }
+  .solution p{ margin:.5rem 0; }
+
+  .next{
+    margin-top:3.5rem; padding:1.4rem 1.5rem;
+    display:flex; align-items:center; justify-content:space-between; gap:1rem;
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  }
+  .next .lbl{ font-family:"IBM Plex Mono",monospace; font-size:.72rem; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--ink-faint); }
+  .next .name{ font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:1.15rem; color:var(--rat); }
+  .next .arrow{ color:var(--rat); font-size:1.4rem; }
+
+  a:focus-visible, summary:focus-visible{ outline:2px solid var(--exp); outline-offset:3px; border-radius:4px; }
+
+  @media (max-width:520px){
+    body{ font-size:16px; }
+    .q-head{ padding:.9rem; }
+    .solution{ padding-left:1.2rem; }
+    summary{ padding-left:1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="rail">
+  <span class="dot"></span>
+  <b>Calculus&nbsp;1</b> · Module 06 / 10 · Derivatives of Special Functions
+</div>
+
+<main>
+
+  <header class="hero">
+    <div class="eyebrow"><span class="num">06</span> Mechanics Module</div>
+    <h1>Special Functions</h1>
+    <p class="lede">Trig, exponentials, logs, and inverse trig — the derivative formulas you memorize cold, and the chain-rule patterns that use them.</p>
+
+    <figure class="plot">
+      <svg viewBox="0 0 600 340" role="img" aria-label="Sine and cosine waves plotted together: cosine is the derivative of sine, crossing zero at sine's peaks.">
+        <g class="tick">
+          <line x1="60" y1="40" x2="60" y2="300"/><line x1="140" y1="40" x2="140" y2="300"/>
+          <line x1="220" y1="40" x2="220" y2="300"/><line x1="380" y1="40" x2="380" y2="300"/>
+          <line x1="460" y1="40" x2="460" y2="300"/><line x1="540" y1="40" x2="540" y2="300"/>
+          <line x1="60" y1="60" x2="540" y2="60"/><line x1="60" y1="240" x2="540" y2="240"/>
+        </g>
+        <g class="axis">
+          <line x1="60" y1="170" x2="560" y2="170"/>
+          <line x1="80" y1="30" x2="80" y2="315"/>
+        </g>
+        <path class="curve c1" style="color:var(--trig);stroke:var(--trig)"
+          d="M 80 170 C 130 60, 190 60, 240 170 C 290 280, 350 280, 400 170 C 450 60, 510 60, 560 170"/>
+        <path class="curve c2" style="color:var(--exp);stroke:var(--exp)"
+          d="M 80 60 C 130 60, 190 280, 240 280 C 290 280, 350 60, 400 60 C 450 60, 510 280, 560 280"/>
+        <circle cx="160" cy="88" r="6" fill="var(--trig)" style="filter:drop-shadow(0 0 6px var(--trig))"/>
+        <line x1="160" y1="88" x2="160" y2="170" stroke="var(--ink-faint)" stroke-width="1.4" stroke-dasharray="4 4"/>
+        <text x="172" y="84" fill="var(--ink-soft)" font-family="IBM Plex Mono" font-size="14">sin peaks → cos = 0</text>
+      </svg>
+      <div class="legend"><span><i style="background:var(--trig)"></i> sin x</span>
+        <span><i style="background:var(--exp)"></i> cos x = (sin x)′</span></div>
+    </figure>
+  </header>
+
+  <div class="section-tag"><b>Tutorial</b> · ~1000 words</div>
+
+  <h2 style="--accent:var(--trig)"><span class="k">01</span>Sine and cosine</h2>
+  <p>The two special limits from Module 02 — $\lim_{h\to 0}\frac{\sin h}{h} = 1$ and $\lim_{h\to 0}\frac{1-\cos h}{h} = 0$ — plug into the limit definition to give the cleanest derivative pair in mathematics:</p>
+  <p>$$\frac{d}{dx}\sin x = \cos x \qquad\qquad \frac{d}{dx}\cos x = -\sin x$$</p>
+  <p>The hero graph shows why this is believable: wherever $\sin$ peaks or bottoms out (slope zero), $\cos$ crosses zero; wherever $\sin$ climbs steepest, $\cos$ is at its maximum. Keep the sign straight: <strong>cosine's derivative carries the minus</strong>. These formulas are the reason radians are mandatory — in degrees, an ugly factor of $\pi/180$ contaminates everything.</p>
+
+  <h2 style="--accent:var(--exp)"><span class="k">02</span>The other four trig functions</h2>
+  <p>The remaining four follow from the quotient rule applied to $\sin$ and $\cos$ — derive them once, then memorize:</p>
+  <ul class="clean">
+    <li style="--fam:var(--trig)">$\dfrac{d}{dx}\tan x = \sec^2 x$</li>
+    <li style="--fam:var(--exp)">$\dfrac{d}{dx}\sec x = \sec x \tan x$</li>
+    <li style="--fam:var(--log)">$\dfrac{d}{dx}\cot x = -\csc^2 x$</li>
+    <li style="--fam:var(--rat)">$\dfrac{d}{dx}\csc x = -\csc x \cot x$</li>
+  </ul>
+  <p>Memory pattern: every "co-" function ($\cos$, $\cot$, $\csc$) gets a negative sign, and each co-derivative is the mirror of its partner with every function swapped for its co-version.</p>
+
+  <h2 style="--accent:var(--rat)"><span class="k">03</span>The exponential function</h2>
+  <p>The number $e \approx 2.71828$ is <em>defined</em> so that this works:</p>
+  <p>$$\frac{d}{dx}\,e^x = e^x$$</p>
+  <p>The exponential function is its own derivative — its height <em>is</em> its slope at every point. That self-similarity is why $e^x$ governs everything that grows in proportion to its size: populations, compound interest, radioactive decay. For other bases, a correction factor appears:</p>
+  <p>$$\frac{d}{dx}\,a^x = a^x \ln a$$</p>
+  <p>so $\frac{d}{dx}2^x = 2^x\ln 2$. (Check the consistency: when $a = e$, $\ln e = 1$ and the factor vanishes.)</p>
+
+  <h2 style="--accent:var(--log)"><span class="k">04</span>The natural logarithm</h2>
+  <p>$$\frac{d}{dx}\,\ln x = \frac{1}{x} \qquad (x > 0) \qquad\qquad \frac{d}{dx}\,\log_a x = \frac{1}{x \ln a}$$</p>
+  <p>A power function's derivative ($x^{-1}$) coming from a non-power function is one of calculus's happiest surprises — it fills the single gap the reverse power rule will have in Module 10. Practical tip: <strong>use log laws to expand before differentiating.</strong> For $y = \ln\dfrac{x^2\sqrt{x+1}}{(2x-3)^4}$, expanding to $2\ln x + \tfrac{1}{2}\ln(x+1) - 4\ln(2x-3)$ turns a nightmare into three easy chain-rule terms.</p>
+
+  <h2 style="--accent:var(--poly)"><span class="k">05</span>Everything meets the chain rule</h2>
+  <p>Each formula above has a chain-rule version with $u = g(x)$ inside; these generalized forms are what you actually use:</p>
+  <p>$$\frac{d}{dx}\sin u = \cos u \cdot u' \qquad \frac{d}{dx}\,e^u = e^u \cdot u' \qquad \frac{d}{dx}\ln u = \frac{u'}{u}$$</p>
+  <p>Examples: $\frac{d}{dx}\sin(5x) = 5\cos(5x)$; $\frac{d}{dx}e^{3x^2} = 6x\,e^{3x^2}$; $\frac{d}{dx}\ln(x^2+1) = \frac{2x}{x^2+1}$. The $\frac{u'}{u}$ pattern for logs is so common it deserves its own neuron. Watch the notation trap: $\sin^2 x$ means $(\sin x)^2$ — a power of sine, differentiated with the chain rule as $2\sin x\cos x$ — while $\sin(x^2)$ has the square <em>inside</em>.</p>
+
+  <h2 style="--accent:var(--trig)"><span class="k">06</span>Inverse trig functions</h2>
+  <p>The two that matter most in Calc 1:</p>
+  <p>$$\frac{d}{dx}\arcsin x = \frac{1}{\sqrt{1 - x^2}} \qquad\qquad \frac{d}{dx}\arctan x = \frac{1}{1 + x^2}$$</p>
+  <p>(Also $\arccos x$, whose derivative is just the negative of arcsine's.) Strange but true: the derivatives of inverse <em>trig</em> functions are purely <em>algebraic</em>. These arrive via implicit differentiation — a preview of Module 07 — and their real importance blooms in integration, where $\frac{1}{1+x^2}$ would otherwise be impossible to antidifferentiate.</p>
+
+  <h2 style="--accent:var(--exp)"><span class="k">07</span>Mixed practice: choosing the pattern</h2>
+  <p>Fluency means recognizing which formula plus which structural rule applies. $y = x^2 e^x$ is a <em>product</em>: $y' = 2xe^x + x^2e^x = xe^x(2 + x)$. $y = e^{\sin x}$ is a <em>composition</em>: $y' = e^{\sin x}\cos x$. $y = \dfrac{\ln x}{x}$ is a <em>quotient</em>: $y' = \dfrac{\frac{1}{x}\cdot x - \ln x}{x^2} = \dfrac{1 - \ln x}{x^2}$. Same six memorized formulas, different scaffolding. When stuck, name the outermost structure aloud — product, quotient, or composition — before writing anything.</p>
+
+  <h2 style="--accent:var(--log)"><span class="k">08</span>Logarithmic differentiation</h2>
+  <p>For functions with a <em>variable base and variable exponent</em>, like $y = x^x$, neither the power rule (needs constant exponent) nor the exponential rule (needs constant base) applies. The trick: take $\ln$ of both sides, use log laws, then differentiate implicitly. From $\ln y = x\ln x$, differentiating gives $\frac{y'}{y} = \ln x + 1$, so $y' = x^x(\ln x + 1)$. The same technique tames big products and quotients: logs convert multiplication into addition <em>before</em> you differentiate.</p>
+
+  <div class="callout">
+    <p style="margin:0"><b>The formula card to memorize cold.</b> $(\sin x)' = \cos x$; $(\cos x)' = -\sin x$; $(\tan x)' = \sec^2 x$; $(e^x)' = e^x$; $(a^x)' = a^x\ln a$; $(\ln x)' = \frac{1}{x}$; $(\arcsin x)' = \frac{1}{\sqrt{1-x^2}}$; $(\arctan x)' = \frac{1}{1+x^2}$. Every one of these has a chain-rule version with $u$ inside and a trailing $u'$.</p>
+  </div>
+
+  <div class="section-tag"><b>Practice</b> · 20 problems · tap to reveal each solution</div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">1</div><div class="q-body">
+      <p>Differentiate $y = \sin x + 3\cos x$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$y' = \cos x - 3\sin x$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">2</div><div class="q-body">
+      <p>Differentiate $y = \tan x - \sec x$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$y' = \sec^2 x - \sec x\tan x$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">3</div><div class="q-body">
+      <p>Differentiate $y = \sin(5x)$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Chain rule: $y' = 5\cos(5x)$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">4</div><div class="q-body">
+      <p>Differentiate $y = \cos(x^3)$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$y' = -\sin(x^3)\cdot 3x^2 = -3x^2\sin(x^3)$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">5</div><div class="q-body">
+      <p>Differentiate $y = \sin^2 x$ and contrast with $y = \sin(x^2)$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$\sin^2 x = (\sin x)^2 \Rightarrow y' = 2\sin x\cos x$.</p>
+      <p>$\sin(x^2) \Rightarrow y' = 2x\cos(x^2)$. Different placement of the square, different answer.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">6</div><div class="q-body">
+      <p>Differentiate $y = e^{3x}$ and $y = e^{-x^2}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$\left(e^{3x}\right)' = 3e^{3x}$; $\left(e^{-x^2}\right)' = -2x\,e^{-x^2}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">7</div><div class="q-body">
+      <p>Differentiate $y = 5^x$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$y' = 5^x \ln 5$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">8</div><div class="q-body">
+      <p>Differentiate $y = \ln(x^2 + 1)$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$\dfrac{u'}{u}$ pattern: $y' = \dfrac{2x}{x^2 + 1}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">9</div><div class="q-body">
+      <p>Differentiate $y = \ln(\sin x)$. Simplify.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$y' = \dfrac{\cos x}{\sin x} = \cot x$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">10</div><div class="q-body">
+      <p>Product: differentiate $y = x^2 e^x$ and factor the result.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$y' = 2xe^x + x^2e^x = xe^x(2 + x)$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">11</div><div class="q-body">
+      <p>Product: differentiate $y = x\sin x$, then find $y'(\pi)$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$y' = \sin x + x\cos x$. At $\pi$: $0 + \pi(-1) = -\pi$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">12</div><div class="q-body">
+      <p>Quotient: differentiate $y = \dfrac{\ln x}{x}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$y' = \dfrac{\frac{1}{x}\cdot x - \ln x \cdot 1}{x^2} = \dfrac{1 - \ln x}{x^2}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">13</div><div class="q-body">
+      <p>Quotient: differentiate $y = \dfrac{e^x}{x + 1}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$y' = \dfrac{e^x(x+1) - e^x}{(x+1)^2} = \dfrac{x\,e^x}{(x+1)^2}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">14</div><div class="q-body">
+      <p>Composition stack: differentiate $y = e^{\sin x}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$y' = e^{\sin x}\cos x$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">15</div><div class="q-body">
+      <p>Expand first with log laws, then differentiate: $y = \ln\dfrac{x^3}{2x + 1}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$y = 3\ln x - \ln(2x+1)$, so $y' = \dfrac{3}{x} - \dfrac{2}{2x+1}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">16</div><div class="q-body">
+      <p>Differentiate $y = \arctan(2x)$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$y' = \dfrac{2}{1 + (2x)^2} = \dfrac{2}{1 + 4x^2}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">17</div><div class="q-body">
+      <p>Differentiate $y = \arcsin(x^2)$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$y' = \dfrac{2x}{\sqrt{1 - x^4}}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">18</div><div class="q-body">
+      <p>Find the tangent line to $y = e^x$ at $x = 0$, and to $y = \ln x$ at $x = 1$. Notice anything?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$e^x$ at $0$: point $(0,1)$, slope $1$ → $y = x + 1$.</p>
+      <p>$\ln x$ at $1$: point $(1,0)$, slope $1$ → $y = x - 1$. Mirror images across $y = x$, as inverses should be.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">19</div><div class="q-body">
+      <p>A weight oscillates with position $s(t) = 4\cos(2t)$ cm. Find its velocity and acceleration, and verify $a(t) = -4s(t)$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$v = -8\sin(2t)$; $a = -16\cos(2t)$.</p>
+      <p>$-4s = -16\cos(2t) = a$. ✓ (Simple harmonic motion.)</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">20</div><div class="q-body">
+      <p>Challenge — logarithmic differentiation: find $y'$ for $y = x^x$ ($x > 0$).</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$\ln y = x\ln x$. Differentiate: $\dfrac{y'}{y} = \ln x + 1$.</p>
+      <p>So $y' = x^x(\ln x + 1)$.</p>
+    </div></details>
+  </div>
+
+  <a class="next" href="#" onclick="return false;">
+    <div>
+      <div class="lbl">Next module</div>
+      <div class="name">07 · Implicit Differentiation & Related Rates</div>
+    </div>
+    <div class="arrow">→</div>
+  </a>
+
+</main>
+
+<script>
+  window.addEventListener("DOMContentLoaded", function(){
+    function render(){
+      if (window.renderMathInElement){
+        renderMathInElement(document.body, {
+          delimiters:[
+            {left:"$$", right:"$$", display:true},
+            {left:"$",  right:"$",  display:false},
+            {left:"\\[", right:"\\]", display:true},
+            {left:"\\(", right:"\\)", display:false}
+          ],
+          throwOnError:false
+        });
+      } else {
+        setTimeout(render, 60);
+      }
+    }
+    render();
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calc 1 · 04 — The Derivative (Definition)</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+
+<style>
+  :root{
+    --bg:        #0a0e17;
+    --bg-grid:   rgba(120,140,180,0.055);
+    --surface:   #111725;
+    --surface-2: #161d2e;
+    --border:    rgba(150,170,210,0.12);
+    --border-strong: rgba(150,170,210,0.22);
+
+    --ink:       #e8eef7;
+    --ink-soft:  #aab4c5;
+    --ink-faint: #6f7b90;
+
+    --poly:  #38bdf8;
+    --rat:   #c084fc;
+    --exp:   #fbbf24;
+    --log:   #fb7185;
+    --trig:  #34d399;
+
+    --maxw: 780px;
+    --radius: 14px;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0 / 32px 32px,
+      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0 / 32px 32px,
+      radial-gradient(1200px 600px at 70% -10%, rgba(56,189,248,0.12), transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, sans-serif;
+    font-size:17px;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .katex{ font-size:1.04em; }
+  .katex-display{ margin:1.3em 0; padding:.4em .2em; overflow-x:auto; overflow-y:hidden; }
+
+  .rail{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; gap:.6rem;
+    padding:.7rem clamp(1rem,4vw,2rem);
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.74rem; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink-faint);
+    background:rgba(10,14,23,0.78);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .rail b{ color:var(--ink-soft); font-weight:500; }
+  .rail .dot{ width:7px;height:7px;border-radius:50%;background:var(--poly);box-shadow:0 0 10px var(--poly); }
+
+  main{ max-width:var(--maxw); margin:0 auto; padding:0 clamp(1rem,4vw,2rem) 5rem; }
+
+  .hero{ padding:3.2rem 0 1.5rem; }
+  .eyebrow{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.8rem; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--exp);
+    display:flex; align-items:center; gap:.75rem;
+  }
+  .eyebrow .num{
+    font-family:"Space Grotesk", sans-serif;
+    font-size:.95rem; font-weight:700;
+    color:var(--bg); background:var(--exp);
+    padding:.05rem .5rem; border-radius:6px; letter-spacing:.05em;
+  }
+  h1{
+    font-family:"Space Grotesk", sans-serif;
+    font-weight:700; font-size:clamp(2.1rem,6vw,3.3rem);
+    line-height:1.05; letter-spacing:-0.02em;
+    margin:1rem 0 .8rem;
+    background:linear-gradient(100deg,var(--poly),var(--exp) 55%,var(--log));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .lede{
+    color:var(--ink-soft); font-size:1.08rem; max-width:60ch;
+    border-left:2px solid var(--border-strong); padding-left:1rem;
+  }
+
+  figure.plot{
+    margin:2rem 0 0; padding:1rem;
+    background:linear-gradient(180deg,var(--surface),var(--bg));
+    border:1px solid var(--border); border-radius:var(--radius);
+  }
+  figure.plot svg{ width:100%; height:auto; display:block; }
+  .legend{
+    display:flex; flex-wrap:wrap; gap:1.1rem;
+    margin-top:.6rem; padding:0 .3rem;
+    font-family:"IBM Plex Mono", monospace; font-size:.82rem; color:var(--ink-soft);
+  }
+  .legend span{ display:inline-flex; align-items:center; gap:.45rem; }
+  .legend i{ width:22px; height:3px; border-radius:2px; display:inline-block; }
+
+  .curve{ fill:none; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round;
+    filter:drop-shadow(0 0 6px currentColor); }
+  .axis{ stroke:rgba(160,175,205,0.35); stroke-width:1.2; }
+  .tick{ stroke:rgba(160,175,205,0.18); stroke-width:1; }
+
+  @media (prefers-reduced-motion:no-preference){
+    .curve{ stroke-dasharray:1400; stroke-dashoffset:1400; animation:draw 1.6s ease forwards; }
+    .curve.c2{ animation-delay:.35s; }
+    .curve.c3{ animation-delay:.7s; }
+    @keyframes draw{ to{ stroke-dashoffset:0; } }
+  }
+
+  .section-tag{
+    display:flex; align-items:center; gap:.8rem;
+    margin:3.5rem 0 1.2rem;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.78rem; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-faint);
+  }
+  .section-tag::after{ content:""; flex:1; height:1px; background:var(--border); }
+  .section-tag b{ color:var(--ink); font-weight:600; }
+
+  h2{
+    font-family:"Space Grotesk", sans-serif;
+    font-weight:600; font-size:1.02rem; letter-spacing:.02em;
+    margin:2.4rem 0 .6rem; padding-left:.9rem;
+    border-left:3px solid var(--accent, var(--poly));
+    color:var(--ink);
+  }
+  h2 .k{ color:var(--accent, var(--poly)); font-family:"IBM Plex Mono",monospace; font-size:.8rem; margin-right:.4rem; }
+
+  p{ margin:.7rem 0; color:var(--ink); }
+  strong{ color:#fff; font-weight:600; }
+
+  ul.clean{ list-style:none; padding:0; margin:1rem 0; display:grid; gap:.55rem; }
+  ul.clean li{
+    padding:.7rem .9rem; background:var(--surface); border:1px solid var(--border);
+    border-radius:10px; border-left:3px solid var(--fam,var(--poly));
+  }
+  ul.clean li .fam{ font-weight:600; color:var(--fam,var(--poly)); }
+
+  ol.rules{ padding-left:1.2rem; margin:1rem 0; }
+  ol.rules li{ margin:.4rem 0; }
+
+  .callout{
+    margin:2rem 0; padding:1.1rem 1.3rem;
+    background:linear-gradient(120deg, rgba(52,211,153,0.10), rgba(56,189,248,0.06));
+    border:1px solid var(--border-strong); border-radius:var(--radius);
+  }
+  .callout b{ color:var(--trig); }
+
+  .q{
+    margin:1rem 0; background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); overflow:hidden;
+    transition:border-color .2s ease;
+  }
+  .q:hover{ border-color:var(--border-strong); }
+  .q-head{ display:flex; gap:.9rem; padding:1.1rem 1.2rem; }
+  .q-num{
+    flex:none; width:2rem; height:2rem; border-radius:8px;
+    display:grid; place-items:center;
+    font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:.9rem;
+    color:var(--bg); background:var(--qc,var(--poly));
+    box-shadow:0 0 14px -2px var(--qc,var(--poly));
+  }
+  .q-body{ flex:1; }
+  .q-body p{ margin:.2rem 0; }
+
+  details{ border-top:1px solid var(--border); }
+  summary{
+    list-style:none; cursor:pointer; user-select:none;
+    padding:.7rem 1.2rem .7rem 3.1rem;
+    font-family:"IBM Plex Mono",monospace; font-size:.78rem;
+    letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint);
+    display:flex; align-items:center; gap:.5rem;
+    transition:color .15s ease, background .15s ease;
+  }
+  summary::-webkit-details-marker{ display:none; }
+  summary::before{
+    content:"▸"; color:var(--qc,var(--poly)); font-size:.9rem;
+    transition:transform .2s ease;
+  }
+  details[open] summary::before{ transform:rotate(90deg); }
+  summary:hover{ color:var(--ink-soft); background:rgba(255,255,255,0.02); }
+  .solution{ padding:.2rem 1.2rem 1.2rem 3.1rem; color:var(--ink-soft); }
+  .solution p{ margin:.5rem 0; }
+
+  .next{
+    margin-top:3.5rem; padding:1.4rem 1.5rem;
+    display:flex; align-items:center; justify-content:space-between; gap:1rem;
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  }
+  .next .lbl{ font-family:"IBM Plex Mono",monospace; font-size:.72rem; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--ink-faint); }
+  .next .name{ font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:1.15rem; color:var(--exp); }
+  .next .arrow{ color:var(--exp); font-size:1.4rem; }
+
+  a:focus-visible, summary:focus-visible{ outline:2px solid var(--exp); outline-offset:3px; border-radius:4px; }
+
+  @media (max-width:520px){
+    body{ font-size:16px; }
+    .q-head{ padding:.9rem; }
+    .solution{ padding-left:1.2rem; }
+    summary{ padding-left:1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="rail">
+  <span class="dot"></span>
+  <b>Calculus&nbsp;1</b> · Module 04 / 10 · The Derivative (Definition)
+</div>
+
+<main>
+
+  <header class="hero">
+    <div class="eyebrow"><span class="num">04</span> Core Concept Module</div>
+    <h1>The Derivative</h1>
+    <p class="lede">Slope of the tangent line, instantaneous rate of change, velocity at an instant — one limit defines them all.</p>
+
+    <figure class="plot">
+      <svg viewBox="0 0 600 340" role="img" aria-label="A parabola with a secant line through two points sliding into the tangent line at one point.">
+        <g class="tick">
+          <line x1="60" y1="40" x2="60" y2="300"/><line x1="140" y1="40" x2="140" y2="300"/>
+          <line x1="220" y1="40" x2="220" y2="300"/><line x1="380" y1="40" x2="380" y2="300"/>
+          <line x1="460" y1="40" x2="460" y2="300"/><line x1="540" y1="40" x2="540" y2="300"/>
+          <line x1="60" y1="60" x2="540" y2="60"/><line x1="60" y1="140" x2="540" y2="140"/>
+          <line x1="60" y1="220" x2="540" y2="220"/>
+        </g>
+        <g class="axis">
+          <line x1="60" y1="300" x2="560" y2="300"/>
+          <line x1="80" y1="30" x2="80" y2="315"/>
+        </g>
+        <path class="curve c1" style="color:var(--poly);stroke:var(--poly)"
+          d="M 110 60 Q 300 460 520 90"/>
+        <line class="curve c2" style="color:var(--ink-faint);stroke:var(--ink-faint);stroke-width:1.8"
+          x1="150" y1="260" x2="470" y2="105" stroke-dasharray="6 5"/>
+        <line class="curve c3" style="color:var(--exp);stroke:var(--exp)"
+          x1="140" y1="285 " x2="420" y2="140"/>
+        <circle cx="262" cy="222" r="6" fill="var(--exp)" style="filter:drop-shadow(0 0 6px var(--exp))"/>
+        <circle cx="392" cy="155" r="6" fill="var(--bg)" stroke="var(--ink-faint)" stroke-width="2"/>
+        <text x="238" y="255" fill="var(--exp)" font-family="IBM Plex Mono" font-size="15">(a, f(a))</text>
+        <text x="404" y="150" fill="var(--ink-faint)" font-family="IBM Plex Mono" font-size="14">(a+h, f(a+h))</text>
+        <text x="430" y="200" fill="var(--ink-faint)" font-family="IBM Plex Mono" font-size="14">h → 0</text>
+      </svg>
+      <div class="legend"><span><i style="background:var(--poly)"></i> y = f(x)</span>
+        <span><i style="background:var(--ink-faint)"></i> secant (average rate)</span>
+        <span><i style="background:var(--exp)"></i> tangent (instantaneous rate)</span></div>
+    </figure>
+  </header>
+
+  <div class="section-tag"><b>Tutorial</b> · ~1000 words</div>
+
+  <h2 style="--accent:var(--poly)"><span class="k">01</span>From secant to tangent</h2>
+  <p>Pick two points on a curve, $(a, f(a))$ and $(a+h,\, f(a+h))$. The line through them — a <strong>secant line</strong> — has slope</p>
+  <p>$$\frac{f(a+h) - f(a)}{h}$$</p>
+  <p>which is the <strong>average rate of change</strong> of $f$ over the interval. Now slide the second point toward the first by letting $h \to 0$. The secant lines pivot into a single limiting line — the <strong>tangent line</strong> — and their slopes converge to the <strong>instantaneous rate of change</strong>. That sliding picture is the hero graph above, and it is the entire conceptual content of the derivative. Everything else is bookkeeping.</p>
+
+  <h2 style="--accent:var(--exp)"><span class="k">02</span>The definition</h2>
+  <p>The <strong>derivative of $f$ at $a$</strong> is</p>
+  <p>$$f'(a) = \lim_{h \to 0} \frac{f(a+h) - f(a)}{h}$$</p>
+  <p>provided the limit exists. There's an equivalent form that's sometimes easier to use and to recognize on exams:</p>
+  <p>$$f'(a) = \lim_{x \to a} \frac{f(x) - f(a)}{x - a}$$</p>
+  <p>Notice this is always a $\frac{0}{0}$ indeterminate form — the numerator and denominator both vanish — which is why every Module 02 technique (expand, factor, cancel, conjugate) reappears here. The derivative is not new machinery; it is a <em>specific limit</em> you already know how to compute.</p>
+
+  <h2 style="--accent:var(--log)"><span class="k">03</span>Two worked computations</h2>
+  <p><strong>Example 1: $f(x) = x^2$.</strong></p>
+  <p>$$f'(x) = \lim_{h\to 0}\frac{(x+h)^2 - x^2}{h} = \lim_{h\to 0}\frac{2xh + h^2}{h} = \lim_{h\to 0}\,(2x + h) = 2x$$</p>
+  <p><strong>Example 2: $f(x) = \dfrac{1}{x}$.</strong> Combine the fractions in the numerator first:</p>
+  <p>$$f'(x) = \lim_{h\to 0}\frac{\frac{1}{x+h} - \frac{1}{x}}{h} = \lim_{h\to 0}\frac{\frac{-h}{x(x+h)}}{h} = \lim_{h\to 0}\frac{-1}{x(x+h)} = -\frac{1}{x^2}$$</p>
+  <p>The rhythm is always: set up the difference quotient, do algebra until the lone $h$ in the denominator cancels, then let $h \to 0$.</p>
+
+  <h2 style="--accent:var(--trig)"><span class="k">04</span>The derivative as a function, and notation</h2>
+  <p>Computing $f'$ at a general $x$ (as above) produces a <strong>new function</strong> $f'(x)$ whose value at each point is the slope there. You'll see several notations for the same object, and you need to read all of them fluently:</p>
+  <p>$$f'(x) \qquad y' \qquad \frac{dy}{dx} \qquad \frac{d}{dx}f(x)$$</p>
+  <p>Lagrange's prime notation is compact; Leibniz's $\frac{dy}{dx}$ makes the "change in $y$ per change in $x$" meaning visible and will shine in the chain rule and related rates. Evaluation at a point is written $f'(3)$ or $\left.\frac{dy}{dx}\right|_{x=3}$.</p>
+
+  <h2 style="--accent:var(--rat)"><span class="k">05</span>What the derivative means</h2>
+  <p>Interpretation is half the course. If $s(t)$ is position at time $t$, then $s'(t)$ is <strong>velocity</strong> — the speedometer reading at instant $t$, not an average over a trip. If $C(x)$ is the cost of producing $x$ units, $C'(x)$ is <strong>marginal cost</strong>, roughly the cost of one more unit. In every case the units of $f'$ are <em>(units of output) per (unit of input)</em>: a population in thousands measured over years has a derivative in thousands per year. Exam tip: when asked to "interpret $f'(5) = 12$," answer with the rate, the units, and the instant — "at time 5, the quantity is increasing at 12 units per hour."</p>
+
+  <h2 style="--accent:var(--poly)"><span class="k">06</span>The tangent line equation</h2>
+  <p>The tangent line to $y = f(x)$ at $x = a$ passes through $(a, f(a))$ with slope $f'(a)$, so point–slope form gives</p>
+  <p>$$y = f(a) + f'(a)\,(x - a)$$</p>
+  <p>Example: for $f(x) = x^2$ at $a = 3$: $f(3) = 9$, $f'(3) = 6$, so $y = 9 + 6(x - 3) = 6x - 9$. This little formula is also the <strong>linear approximation</strong> of $f$ near $a$ — the best straight-line stand-in for the curve — an idea that returns throughout calculus.</p>
+
+  <h2 style="--accent:var(--exp)"><span class="k">07</span>Where derivatives fail to exist</h2>
+  <p>The defining limit can fail, and the failures have geometric signatures:</p>
+  <ul class="clean">
+    <li style="--fam:var(--log)"><span class="fam">Corner</span> — one-sided slopes disagree. $f(x) = |x|$ at $0$: slope $-1$ from the left, $+1$ from the right.</li>
+    <li style="--fam:var(--exp)"><span class="fam">Cusp</span> — slopes blow up to $+\infty$ on one side and $-\infty$ on the other, like $x^{2/3}$ at $0$.</li>
+    <li style="--fam:var(--poly)"><span class="fam">Vertical tangent</span> — the tangent exists but is vertical (infinite slope), like $x^{1/3}$ at $0$.</li>
+    <li style="--fam:var(--rat)"><span class="fam">Discontinuity</span> — no continuity, no derivative. Ever.</li>
+  </ul>
+  <p>That last item is a theorem worth stating: <strong>differentiable $\Rightarrow$ continuous</strong>. The converse is false — $|x|$ is the standard counterexample — so "continuous but not differentiable" is a phrase to keep handy.</p>
+
+  <h2 style="--accent:var(--log)"><span class="k">08</span>Reading derivatives from graphs</h2>
+  <p>Given only a graph of $f$, you can sketch $f'$: where $f$ rises, $f' > 0$; where $f$ falls, $f' < 0$; at smooth peaks and valleys, $f' = 0$. Steepness translates to magnitude. This graphical fluency — matching a function's graph to its derivative's graph — is a favorite exam question and builds the intuition that Module 08 (curve sketching) will formalize. When you only have a table of values, estimate $f'(a)$ with the symmetric difference quotient $\frac{f(a+h) - f(a-h)}{2h}$ using the nearest available points.</p>
+
+  <div class="callout">
+    <p style="margin:0"><b>The one-sentence summary.</b> The derivative is a limit of difference quotients: $f'(x) = \lim\limits_{h\to 0}\frac{f(x+h)-f(x)}{h}$ — slope of the tangent, instantaneous rate of change, and velocity are all this same number wearing different outfits. Compute it with Module 02 algebra; interpret it with units.</p>
+  </div>
+
+  <div class="section-tag"><b>Practice</b> · 20 problems · tap to reveal each solution</div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">1</div><div class="q-body">
+      <p>Using the limit definition, find $f'(x)$ for $f(x) = 3x^2 - 2$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$\dfrac{3(x+h)^2 - 2 - (3x^2 - 2)}{h} = \dfrac{6xh + 3h^2}{h} = 6x + 3h \to \mathbf{6x}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">2</div><div class="q-body">
+      <p>Using the limit definition, find $f'(x)$ for $f(x) = x^2 - 5x$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Numerator: $(x+h)^2 - 5(x+h) - x^2 + 5x = 2xh + h^2 - 5h$.</p>
+      <p>Divide by $h$: $2x + h - 5 \to \mathbf{2x - 5}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">3</div><div class="q-body">
+      <p>Using the limit definition, find $f'(x)$ for $f(x) = \sqrt{x}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$\dfrac{\sqrt{x+h}-\sqrt{x}}{h} \cdot \dfrac{\sqrt{x+h}+\sqrt{x}}{\sqrt{x+h}+\sqrt{x}} = \dfrac{h}{h(\sqrt{x+h}+\sqrt{x})} = \dfrac{1}{\sqrt{x+h}+\sqrt{x}} \to \mathbf{\dfrac{1}{2\sqrt{x}}}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">4</div><div class="q-body">
+      <p>Using the limit definition, find $f'(x)$ for $f(x) = \dfrac{1}{x + 1}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Numerator: $\dfrac{1}{x+h+1} - \dfrac{1}{x+1} = \dfrac{-h}{(x+h+1)(x+1)}$.</p>
+      <p>Divide by $h$ and let $h \to 0$: $\mathbf{-\dfrac{1}{(x+1)^2}}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">5</div><div class="q-body">
+      <p>Find the equation of the tangent line to $f(x) = x^2$ at $x = 3$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$f(3) = 9$, $f'(x) = 2x$ so $f'(3) = 6$.</p>
+      <p>$y = 9 + 6(x - 3) = \mathbf{6x - 9}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">6</div><div class="q-body">
+      <p>Find the tangent line to $f(x) = \sqrt{x}$ at $x = 4$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$f(4) = 2$, $f'(x) = \dfrac{1}{2\sqrt{x}}$ so $f'(4) = \dfrac{1}{4}$.</p>
+      <p>$y = 2 + \dfrac{1}{4}(x - 4) = \mathbf{\dfrac{x}{4} + 1}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">7</div><div class="q-body">
+      <p>The limit $\lim\limits_{h \to 0} \dfrac{(5+h)^3 - 125}{h}$ is a derivative in disguise. Identify $f$ and $a$, then evaluate it.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>It's $f'(5)$ for $f(x) = x^3$ (since $125 = 5^3$).</p>
+      <p>$f'(x) = 3x^2$ (or expand directly), so the limit is $3 \cdot 25 = \mathbf{75}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">8</div><div class="q-body">
+      <p>Identify and evaluate: $\lim\limits_{x \to 9} \dfrac{\sqrt{x} - 3}{x - 9}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Alternate form of $f'(9)$ for $f(x) = \sqrt{x}$: value $\dfrac{1}{2\sqrt{9}} = \mathbf{\dfrac{1}{6}}$.</p>
+      <p>(Or algebraically: $x - 9 = (\sqrt{x}-3)(\sqrt{x}+3)$, cancel, get $\frac{1}{\sqrt{x}+3} \to \frac16$.)</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">9</div><div class="q-body">
+      <p>A ball's height is $s(t) = 64t - 16t^2$ feet after $t$ seconds. Find the velocity at $t = 1$ and the time when velocity is zero.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$v(t) = s'(t) = 64 - 32t$. $v(1) = \mathbf{32 \text{ ft/s}}$.</p>
+      <p>$v = 0$ at $t = \mathbf{2}$ s — the peak of the flight.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">10</div><div class="q-body">
+      <p>Where does $f(x) = |x - 3|$ fail to be differentiable, and why?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>At $\mathbf{x = 3}$: slope from the left is $-1$, from the right $+1$. Disagreeing one-sided slopes → a corner, so the defining limit DNE. ($f$ <em>is</em> continuous there.)</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">11</div><div class="q-body">
+      <p>True or false: if $f$ is continuous at $a$, then $f$ is differentiable at $a$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p><strong>False.</strong> $f(x) = |x|$ at $0$ is continuous but not differentiable. (The true direction: differentiable $\Rightarrow$ continuous.)</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">12</div><div class="q-body">
+      <p>Sketch-reasoning: $f$ increases on $(-\infty, 2)$, has a smooth peak at $x=2$, and decreases after. What are the signs of $f'$ on each interval and the value of $f'(2)$?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$f' > 0$ on $(-\infty, 2)$, $f'(2) = 0$, $f' < 0$ on $(2, \infty)$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">13</div><div class="q-body">
+      <p>Given the table $f(1) = 4.0$, $f(1.1) = 4.63$, $f(0.9) = 3.42$, estimate $f'(1)$ with the symmetric difference quotient.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$f'(1) \approx \dfrac{f(1.1) - f(0.9)}{0.2} = \dfrac{4.63 - 3.42}{0.2} = \mathbf{6.05}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">14</div><div class="q-body">
+      <p>$P(t)$ is a town's population (in thousands) $t$ years after 2020, and $P'(4) = -1.5$. Interpret this sentence in plain English with units.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>In 2024, the population is <strong>decreasing at a rate of 1{,}500 people per year</strong>.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">15</div><div class="q-body">
+      <p>Using the limit definition, find $f'(2)$ for $f(x) = x^3$ via the alternate form $\lim\limits_{x\to 2}\frac{x^3 - 8}{x - 2}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Factor: $x^3 - 8 = (x-2)(x^2 + 2x + 4)$. Cancel and substitute: $4 + 4 + 4 = \mathbf{12}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">16</div><div class="q-body">
+      <p>Find the point(s) on $y = x^2$ where the tangent line is parallel to $y = 4x - 7$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Parallel means equal slopes: $2x = 4 \Rightarrow x = 2$. Point: $\mathbf{(2, 4)}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">17</div><div class="q-body">
+      <p>For $f(x) = x^{1/3}$, describe what happens to the derivative at $x = 0$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$\dfrac{f(h) - f(0)}{h} = \dfrac{h^{1/3}}{h} = h^{-2/3} \to +\infty$. The graph has a <strong>vertical tangent</strong> at $0$ — not differentiable there.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">18</div><div class="q-body">
+      <p>The tangent line to $f$ at $x = 5$ is $y = 3x - 4$. Find $f(5)$ and $f'(5)$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>The tangent touches the curve at the point of tangency: $f(5) = 3(5) - 4 = \mathbf{11}$; its slope is the derivative: $f'(5) = \mathbf{3}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">19</div><div class="q-body">
+      <p>An object's position is $s(t) = t^2 - 6t + 8$ m. When is it moving left (negative velocity), and what is its speed at $t = 1$?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$v(t) = 2t - 6 < 0$ for $\mathbf{t < 3}$. At $t = 1$: $v = -4$, so speed $= |v| = \mathbf{4 \text{ m/s}}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">20</div><div class="q-body">
+      <p>Challenge: use the definition to differentiate $f(x) = \dfrac{x}{x+2}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$\dfrac{1}{h}\left[\dfrac{x+h}{x+h+2} - \dfrac{x}{x+2}\right] = \dfrac{(x+h)(x+2) - x(x+h+2)}{h(x+h+2)(x+2)} = \dfrac{2h}{h(x+h+2)(x+2)}$.</p>
+      <p>Cancel $h$, let $h \to 0$: $\mathbf{\dfrac{2}{(x+2)^2}}$.</p>
+    </div></details>
+  </div>
+
+  <a class="next" href="#" onclick="return false;">
+    <div>
+      <div class="lbl">Next module</div>
+      <div class="name">05 · Differentiation Rules</div>
+    </div>
+    <div class="arrow">→</div>
+  </a>
+
+</main>
+
+<script>
+  window.addEventListener("DOMContentLoaded", function(){
+    function render(){
+      if (window.renderMathInElement){
+        renderMathInElement(document.body, {
+          delimiters:[
+            {left:"$$", right:"$$", display:true},
+            {left:"$",  right:"$",  display:false},
+            {left:"\\[", right:"\\]", display:true},
+            {left:"\\(", right:"\\)", display:false}
+          ],
+          throwOnError:false
+        });
+      } else {
+        setTimeout(render, 60);
+      }
+    }
+    render();
+  });
+</script>
+</body>
+</html>

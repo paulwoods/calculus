@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calc 1 · 07 — Implicit Differentiation & Related Rates</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+
+<style>
+  :root{
+    --bg:        #0a0e17;
+    --bg-grid:   rgba(120,140,180,0.055);
+    --surface:   #111725;
+    --surface-2: #161d2e;
+    --border:    rgba(150,170,210,0.12);
+    --border-strong: rgba(150,170,210,0.22);
+
+    --ink:       #e8eef7;
+    --ink-soft:  #aab4c5;
+    --ink-faint: #6f7b90;
+
+    --poly:  #38bdf8;
+    --rat:   #c084fc;
+    --exp:   #fbbf24;
+    --log:   #fb7185;
+    --trig:  #34d399;
+
+    --maxw: 780px;
+    --radius: 14px;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0 / 32px 32px,
+      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0 / 32px 32px,
+      radial-gradient(1200px 600px at 70% -10%, rgba(192,132,252,0.12), transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, sans-serif;
+    font-size:17px;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .katex{ font-size:1.04em; }
+  .katex-display{ margin:1.3em 0; padding:.4em .2em; overflow-x:auto; overflow-y:hidden; }
+
+  .rail{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; gap:.6rem;
+    padding:.7rem clamp(1rem,4vw,2rem);
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.74rem; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink-faint);
+    background:rgba(10,14,23,0.78);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .rail b{ color:var(--ink-soft); font-weight:500; }
+  .rail .dot{ width:7px;height:7px;border-radius:50%;background:var(--rat);box-shadow:0 0 10px var(--rat); }
+
+  main{ max-width:var(--maxw); margin:0 auto; padding:0 clamp(1rem,4vw,2rem) 5rem; }
+
+  .hero{ padding:3.2rem 0 1.5rem; }
+  .eyebrow{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.8rem; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--exp);
+    display:flex; align-items:center; gap:.75rem;
+  }
+  .eyebrow .num{
+    font-family:"Space Grotesk", sans-serif;
+    font-size:.95rem; font-weight:700;
+    color:var(--bg); background:var(--exp);
+    padding:.05rem .5rem; border-radius:6px; letter-spacing:.05em;
+  }
+  h1{
+    font-family:"Space Grotesk", sans-serif;
+    font-weight:700; font-size:clamp(2.1rem,6vw,3.3rem);
+    line-height:1.05; letter-spacing:-0.02em;
+    margin:1rem 0 .8rem;
+    background:linear-gradient(100deg,var(--rat),var(--log) 55%,var(--exp));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .lede{
+    color:var(--ink-soft); font-size:1.08rem; max-width:60ch;
+    border-left:2px solid var(--border-strong); padding-left:1rem;
+  }
+
+  figure.plot{
+    margin:2rem 0 0; padding:1rem;
+    background:linear-gradient(180deg,var(--surface),var(--bg));
+    border:1px solid var(--border); border-radius:var(--radius);
+  }
+  figure.plot svg{ width:100%; height:auto; display:block; }
+  .legend{
+    display:flex; flex-wrap:wrap; gap:1.1rem;
+    margin-top:.6rem; padding:0 .3rem;
+    font-family:"IBM Plex Mono", monospace; font-size:.82rem; color:var(--ink-soft);
+  }
+  .legend span{ display:inline-flex; align-items:center; gap:.45rem; }
+  .legend i{ width:22px; height:3px; border-radius:2px; display:inline-block; }
+
+  .curve{ fill:none; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round;
+    filter:drop-shadow(0 0 6px currentColor); }
+  .axis{ stroke:rgba(160,175,205,0.35); stroke-width:1.2; }
+  .tick{ stroke:rgba(160,175,205,0.18); stroke-width:1; }
+
+  @media (prefers-reduced-motion:no-preference){
+    .curve{ stroke-dasharray:1400; stroke-dashoffset:1400; animation:draw 1.6s ease forwards; }
+    .curve.c2{ animation-delay:.35s; }
+    .curve.c3{ animation-delay:.7s; }
+    @keyframes draw{ to{ stroke-dashoffset:0; } }
+  }
+
+  .section-tag{
+    display:flex; align-items:center; gap:.8rem;
+    margin:3.5rem 0 1.2rem;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.78rem; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-faint);
+  }
+  .section-tag::after{ content:""; flex:1; height:1px; background:var(--border); }
+  .section-tag b{ color:var(--ink); font-weight:600; }
+
+  h2{
+    font-family:"Space Grotesk", sans-serif;
+    font-weight:600; font-size:1.02rem; letter-spacing:.02em;
+    margin:2.4rem 0 .6rem; padding-left:.9rem;
+    border-left:3px solid var(--accent, var(--poly));
+    color:var(--ink);
+  }
+  h2 .k{ color:var(--accent, var(--poly)); font-family:"IBM Plex Mono",monospace; font-size:.8rem; margin-right:.4rem; }
+
+  p{ margin:.7rem 0; color:var(--ink); }
+  strong{ color:#fff; font-weight:600; }
+
+  ul.clean{ list-style:none; padding:0; margin:1rem 0; display:grid; gap:.55rem; }
+  ul.clean li{
+    padding:.7rem .9rem; background:var(--surface); border:1px solid var(--border);
+    border-radius:10px; border-left:3px solid var(--fam,var(--poly));
+  }
+  ul.clean li .fam{ font-weight:600; color:var(--fam,var(--poly)); }
+
+  ol.rules{ padding-left:1.2rem; margin:1rem 0; }
+  ol.rules li{ margin:.4rem 0; }
+
+  .callout{
+    margin:2rem 0; padding:1.1rem 1.3rem;
+    background:linear-gradient(120deg, rgba(52,211,153,0.10), rgba(56,189,248,0.06));
+    border:1px solid var(--border-strong); border-radius:var(--radius);
+  }
+  .callout b{ color:var(--trig); }
+
+  .q{
+    margin:1rem 0; background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); overflow:hidden;
+    transition:border-color .2s ease;
+  }
+  .q:hover{ border-color:var(--border-strong); }
+  .q-head{ display:flex; gap:.9rem; padding:1.1rem 1.2rem; }
+  .q-num{
+    flex:none; width:2rem; height:2rem; border-radius:8px;
+    display:grid; place-items:center;
+    font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:.9rem;
+    color:var(--bg); background:var(--qc,var(--poly));
+    box-shadow:0 0 14px -2px var(--qc,var(--poly));
+  }
+  .q-body{ flex:1; }
+  .q-body p{ margin:.2rem 0; }
+
+  details{ border-top:1px solid var(--border); }
+  summary{
+    list-style:none; cursor:pointer; user-select:none;
+    padding:.7rem 1.2rem .7rem 3.1rem;
+    font-family:"IBM Plex Mono",monospace; font-size:.78rem;
+    letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint);
+    display:flex; align-items:center; gap:.5rem;
+    transition:color .15s ease, background .15s ease;
+  }
+  summary::-webkit-details-marker{ display:none; }
+  summary::before{
+    content:"▸"; color:var(--qc,var(--poly)); font-size:.9rem;
+    transition:transform .2s ease;
+  }
+  details[open] summary::before{ transform:rotate(90deg); }
+  summary:hover{ color:var(--ink-soft); background:rgba(255,255,255,0.02); }
+  .solution{ padding:.2rem 1.2rem 1.2rem 3.1rem; color:var(--ink-soft); }
+  .solution p{ margin:.5rem 0; }
+
+  .next{
+    margin-top:3.5rem; padding:1.4rem 1.5rem;
+    display:flex; align-items:center; justify-content:space-between; gap:1rem;
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  }
+  .next .lbl{ font-family:"IBM Plex Mono",monospace; font-size:.72rem; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--ink-faint); }
+  .next .name{ font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:1.15rem; color:var(--log); }
+  .next .arrow{ color:var(--log); font-size:1.4rem; }
+
+  a:focus-visible, summary:focus-visible{ outline:2px solid var(--exp); outline-offset:3px; border-radius:4px; }
+
+  @media (max-width:520px){
+    body{ font-size:16px; }
+    .q-head{ padding:.9rem; }
+    .solution{ padding-left:1.2rem; }
+    summary{ padding-left:1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="rail">
+  <span class="dot"></span>
+  <b>Calculus&nbsp;1</b> · Module 07 / 10 · Implicit Differentiation & Related Rates
+</div>
+
+<main>
+
+  <header class="hero">
+    <div class="eyebrow"><span class="num">07</span> Technique Module</div>
+    <h1>Implicit &amp; Related Rates</h1>
+    <p class="lede">Differentiate curves that aren't solved for y, then set the whole machine in motion: when one quantity changes, how fast do the others respond?</p>
+
+    <figure class="plot">
+      <svg viewBox="0 0 600 340" role="img" aria-label="A circle with a tangent line at a point — the classic implicit curve x squared plus y squared equals r squared.">
+        <g class="tick">
+          <line x1="60" y1="40" x2="60" y2="300"/><line x1="140" y1="40" x2="140" y2="300"/>
+          <line x1="220" y1="40" x2="220" y2="300"/><line x1="380" y1="40" x2="380" y2="300"/>
+          <line x1="460" y1="40" x2="460" y2="300"/><line x1="540" y1="40" x2="540" y2="300"/>
+          <line x1="60" y1="60" x2="540" y2="60"/><line x1="60" y1="170" x2="540" y2="170"/>
+          <line x1="60" y1="280" x2="540" y2="280"/>
+        </g>
+        <g class="axis">
+          <line x1="60" y1="170" x2="560" y2="170"/>
+          <line x1="300" y1="30" x2="300" y2="315"/>
+        </g>
+        <circle class="curve c1" style="color:var(--rat);stroke:var(--rat)" cx="300" cy="170" r="105" fill="none"/>
+        <line class="curve c2" style="color:var(--exp);stroke:var(--exp)"
+          x1="260" y1="30" x2="480" y2="195"/>
+        <circle cx="374" cy="96" r="6" fill="var(--exp)" style="filter:drop-shadow(0 0 6px var(--exp))"/>
+        <text x="388" y="88" fill="var(--exp)" font-family="IBM Plex Mono" font-size="15">(x, y)</text>
+        <text x="330" y="250" fill="var(--rat)" font-family="IBM Plex Mono" font-size="15">x² + y² = r²</text>
+      </svg>
+      <div class="legend"><span><i style="background:var(--rat)"></i> implicit curve — not a function, still has tangent lines</span>
+        <span><i style="background:var(--exp)"></i> slope from dy/dx = −x/y</span></div>
+    </figure>
+  </header>
+
+  <div class="section-tag"><b>Tutorial</b> · ~1000 words</div>
+
+  <h2 style="--accent:var(--rat)"><span class="k">01</span>Why implicit differentiation exists</h2>
+  <p>Not every curve hands you $y$ solved in terms of $x$. The circle $x^2 + y^2 = 25$ defines $y$ only <em>implicitly</em> — and solving gives two messy branches, $y = \pm\sqrt{25 - x^2}$. Curves like $x^3 + y^3 = 6xy$ can't be solved for $y$ at all. Implicit differentiation sidesteps the solving entirely: differentiate both sides of the equation as-is, treating $y$ as an unnamed function of $x$, and extract $\frac{dy}{dx}$ algebraically at the end.</p>
+
+  <h2 style="--accent:var(--exp)"><span class="k">02</span>The key move: y is a function of x</h2>
+  <p>Everything reduces to one chain-rule observation: since $y$ depends on $x$, differentiating any expression in $y$ produces a trailing $\frac{dy}{dx}$:</p>
+  <p>$$\frac{d}{dx}\,y^2 = 2y\,\frac{dy}{dx} \qquad \frac{d}{dx}\,\sin y = \cos y\,\frac{dy}{dx} \qquad \frac{d}{dx}\,x y = y + x\frac{dy}{dx}$$</p>
+  <p>(That last one is the product rule — $xy$ is a product of two functions of $x$.) Compare $\frac{d}{dx}x^2 = 2x$ with $\frac{d}{dx}y^2 = 2y\,y'$: the only difference is the tag-along $y'$. Forgetting that tag-along is <em>the</em> implicit differentiation error.</p>
+
+  <h2 style="--accent:var(--log)"><span class="k">03</span>The procedure, worked</h2>
+  <p><strong>Find $\frac{dy}{dx}$ for $x^2 + y^2 = 25$.</strong> Differentiate both sides term by term:</p>
+  <p>$$2x + 2y\,\frac{dy}{dx} = 0 \quad\Longrightarrow\quad \frac{dy}{dx} = -\frac{x}{y}$$</p>
+  <p>The answer contains both $x$ and $y$ — normal and fine, since a given $x$ on a circle corresponds to two points with different slopes. At $(3, 4)$ the slope is $-\tfrac{3}{4}$; at $(3, -4)$ it's $+\tfrac{3}{4}$. General recipe: (1) differentiate both sides, tagging every $y$-derivative with $y'$; (2) collect all $y'$ terms on one side; (3) factor out $y'$ and divide. It's always linear in $y'$, so step 3 always works.</p>
+
+  <h2 style="--accent:var(--trig)"><span class="k">04</span>Tangent lines to implicit curves</h2>
+  <p>Once $\frac{dy}{dx}$ is in hand, tangent lines work exactly as before. For the curve $x^3 + y^3 = 6xy$ (the folium of Descartes) at $(3, 3)$: differentiating gives $3x^2 + 3y^2 y' = 6y + 6xy'$, so $y' = \dfrac{6y - 3x^2}{3y^2 - 6x} = \dfrac{2y - x^2}{y^2 - 2x}$. At $(3,3)$: $y' = \frac{6 - 9}{9 - 6} = -1$, and the tangent is $y = 3 - (x - 3) = -x + 6$. Verify the point satisfies the original equation before trusting anything — graders check, and so should you.</p>
+
+  <h2 style="--accent:var(--poly)"><span class="k">05</span>From implicit to related rates</h2>
+  <p>Now replace $x$ with time. In a <strong>related rates</strong> problem, several quantities depend on $t$ and are linked by an equation; differentiating that equation with respect to $t$ links their <em>rates</em>. The chain rule move is identical — every variable picks up a $\frac{d}{dt}$ tag:</p>
+  <p>$$A = \pi r^2 \quad\Longrightarrow\quad \frac{dA}{dt} = 2\pi r\,\frac{dr}{dt}$$</p>
+  <p>If a ripple's radius grows at $\frac{dr}{dt} = 2$ ft/s, then when $r = 10$ ft the area grows at $\frac{dA}{dt} = 2\pi(10)(2) = 40\pi$ ft²/s. One equation about quantities became one equation about speeds.</p>
+
+  <h2 style="--accent:var(--rat)"><span class="k">06</span>The five-step method</h2>
+  <ol class="rules">
+    <li><strong>Draw and label.</strong> Assign symbols to everything that changes; write given rates as derivatives with signs ($\frac{dx}{dt} = -3$ if $x$ shrinks).</li>
+    <li><strong>Relate.</strong> Find one equation connecting the variables — Pythagorean theorem, similar triangles, area/volume formulas are the usual suspects.</li>
+    <li><strong>Differentiate with respect to $t$</strong> — before plugging in any numbers.</li>
+    <li><strong>Substitute</strong> the snapshot values and known rates.</li>
+    <li><strong>Solve and sanity-check</strong> the sign and units.</li>
+  </ol>
+  <p>The cardinal sin is substituting numbers <em>before</em> differentiating: a value like $x = 6$ that holds only at one instant becomes a constant with derivative zero, silently deleting a term.</p>
+
+  <h2 style="--accent:var(--exp)"><span class="k">07</span>The classic: sliding ladder</h2>
+  <p>A 10-ft ladder leans against a wall; the base slides away at 1 ft/s. How fast is the top sliding down when the base is 6 ft out? Let $x$ = base distance, $y$ = height: $x^2 + y^2 = 100$. Differentiate: $2x\frac{dx}{dt} + 2y\frac{dy}{dt} = 0$. At the snapshot $x = 6$, so $y = 8$, and $\frac{dx}{dt} = 1$:</p>
+  <p>$$2(6)(1) + 2(8)\frac{dy}{dt} = 0 \quad\Longrightarrow\quad \frac{dy}{dt} = -\frac{3}{4} \text{ ft/s}$$</p>
+  <p>The negative sign says the top moves <em>down</em> — the model reporting physics back to you. Note $y = 8$ came from the constraint equation, not the problem statement; deriving missing snapshot values is part of step 4.</p>
+
+  <h2 style="--accent:var(--log)"><span class="k">08</span>Cones, shadows, and similar triangles</h2>
+  <p>Two more patterns cover most homework. <strong>Draining cones:</strong> water in a cone has $V = \frac{1}{3}\pi r^2 h$ with <em>two</em> changing variables — use similar triangles ($\frac{r}{h}$ = constant from the cone's dimensions) to eliminate $r$ before differentiating, leaving $V$ in terms of $h$ alone. <strong>Shadows and distances:</strong> a person walking from a lamppost creates similar triangles relating shadow length to distance; two cars driving apart hide a Pythagorean relation. In every case the geometry supplies step 2's equation — related rates is 20% calculus, 80% setting up the right picture.</p>
+
+  <div class="callout">
+    <p style="margin:0"><b>The two commandments.</b> Implicit: every derivative of a $y$-expression drags a $\frac{dy}{dx}$ along — no exceptions. Related rates: differentiate the relating equation <em>first</em>, substitute the snapshot numbers <em>second</em>. Reverse the order and the answer is silently wrong.</p>
+  </div>
+
+  <div class="section-tag"><b>Practice</b> · 20 problems · tap to reveal each solution</div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">1</div><div class="q-body">
+      <p>Find $\dfrac{dy}{dx}$ for $x^2 + y^2 = 25$, and the slope at $(3, -4)$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$2x + 2y\,y' = 0 \Rightarrow y' = -\dfrac{x}{y}$. At $(3,-4)$: $-\dfrac{3}{-4} = \dfrac{3}{4}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">2</div><div class="q-body">
+      <p>Find $\dfrac{dy}{dx}$ for $xy = 6$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Product rule: $y + x\,y' = 0 \Rightarrow y' = -\dfrac{y}{x}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">3</div><div class="q-body">
+      <p>Find $\dfrac{dy}{dx}$ for $x^3 + y^3 = 9$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$3x^2 + 3y^2 y' = 0 \Rightarrow y' = -\dfrac{x^2}{y^2}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">4</div><div class="q-body">
+      <p>Find $\dfrac{dy}{dx}$ for $x^2 y + x y^2 = 6$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$2xy + x^2 y' + y^2 + 2xy\,y' = 0$.</p>
+      <p>$y'(x^2 + 2xy) = -(2xy + y^2) \Rightarrow y' = -\dfrac{2xy + y^2}{x^2 + 2xy}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">5</div><div class="q-body">
+      <p>Find $\dfrac{dy}{dx}$ for $\sin y = x$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$\cos y \cdot y' = 1 \Rightarrow y' = \dfrac{1}{\cos y}$. (With $\cos y = \sqrt{1 - x^2}$, this is the arcsine derivative from Module 06.)</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">6</div><div class="q-body">
+      <p>Find the tangent line to $x^2 + y^2 = 25$ at $(3, 4)$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Slope $= -\dfrac{3}{4}$. Line: $y = 4 - \dfrac{3}{4}(x - 3)$, i.e. $3x + 4y = 25$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">7</div><div class="q-body">
+      <p>Find the tangent line to $x^3 + y^3 = 6xy$ at $(3, 3)$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$3x^2 + 3y^2y' = 6y + 6xy' \Rightarrow y' = \dfrac{2y - x^2}{y^2 - 2x}$. At $(3,3)$: $\dfrac{-3}{3} = -1$.</p>
+      <p>Tangent: $y = -x + 6$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">8</div><div class="q-body">
+      <p>Find all points on $x^2 + y^2 = 25$ where the tangent line has slope $1$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$-\dfrac{x}{y} = 1 \Rightarrow y = -x$. Substitute: $2x^2 = 25 \Rightarrow x = \pm\dfrac{5}{\sqrt2}$.</p>
+      <p>Points: $\left(\dfrac{5}{\sqrt2}, -\dfrac{5}{\sqrt2}\right)$ and $\left(-\dfrac{5}{\sqrt2}, \dfrac{5}{\sqrt2}\right)$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">9</div><div class="q-body">
+      <p>Where does the curve $y^2 = x^3$ have a horizontal or vertical tangent?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$2y\,y' = 3x^2 \Rightarrow y' = \dfrac{3x^2}{2y}$.</p>
+      <p>Horizontal needs $3x^2 = 0$ with $y \ne 0$: impossible (if $x=0$ then $y=0$). Vertical (undefined) at $y = 0$: the origin — a cusp with a vertical tangent line there.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">10</div><div class="q-body">
+      <p>Find $\dfrac{dy}{dx}$ for $e^y = x + y$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$e^y y' = 1 + y' \Rightarrow y'(e^y - 1) = 1 \Rightarrow y' = \dfrac{1}{e^y - 1}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">11</div><div class="q-body">
+      <p>Second derivative, implicitly: for $x^2 + y^2 = 25$, show $y'' = -\dfrac{25}{y^3}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$y' = -\dfrac{x}{y}$. Quotient rule: $y'' = -\dfrac{y - x y'}{y^2} = -\dfrac{y - x(-x/y)}{y^2} = -\dfrac{y^2 + x^2}{y^3} = -\dfrac{25}{y^3}$. ∎</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">12</div><div class="q-body">
+      <p>A stone dropped in a pond makes a circular ripple whose radius grows at $2$ ft/s. How fast is the enclosed area growing when $r = 10$ ft?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$A = \pi r^2 \Rightarrow \dfrac{dA}{dt} = 2\pi r\dfrac{dr}{dt} = 2\pi(10)(2) = 40\pi \approx 125.7$ ft²/s.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">13</div><div class="q-body">
+      <p>A 10-ft ladder's base slides away from the wall at 1 ft/s. How fast is the top descending when the base is 6 ft from the wall?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$x^2 + y^2 = 100$; at $x = 6$, $y = 8$.</p>
+      <p>$2x\dot{x} + 2y\dot{y} = 0 \Rightarrow \dot{y} = -\dfrac{x\dot x}{y} = -\dfrac{6(1)}{8} = -\dfrac{3}{4}$ ft/s (downward).</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">14</div><div class="q-body">
+      <p>A spherical balloon is inflated at $100$ cm³/s. How fast is the radius growing when $r = 5$ cm? ($V = \frac{4}{3}\pi r^3$)</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$\dfrac{dV}{dt} = 4\pi r^2 \dfrac{dr}{dt} \Rightarrow \dfrac{dr}{dt} = \dfrac{100}{4\pi(25)} = \dfrac{1}{\pi} \approx 0.32$ cm/s.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">15</div><div class="q-body">
+      <p>A cube's edge grows at $3$ cm/min. How fast is the volume increasing when the edge is $10$ cm?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$V = s^3 \Rightarrow \dfrac{dV}{dt} = 3s^2\dfrac{ds}{dt} = 3(100)(3) = 900$ cm³/min.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">16</div><div class="q-body">
+      <p>Two cars leave an intersection: one drives north at 60 mph, the other east at 25 mph. How fast is the distance between them increasing after 1 hour?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>At $t = 1$: $y = 60$, $x = 25$, $z = \sqrt{60^2 + 25^2} = 65$.</p>
+      <p>$z^2 = x^2 + y^2 \Rightarrow z\dot z = x\dot x + y\dot y \Rightarrow \dot z = \dfrac{25(25) + 60(60)}{65} = \dfrac{4225}{65} = 65$ mph.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">17</div><div class="q-body">
+      <p>Water fills an inverted cone (height 12 m, top radius 4 m) at $2$ m³/min. How fast is the water level rising when the water is 6 m deep?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Similar triangles: $r = \dfrac{h}{3}$, so $V = \dfrac{1}{3}\pi\left(\dfrac{h}{3}\right)^2 h = \dfrac{\pi h^3}{27}$.</p>
+      <p>$\dfrac{dV}{dt} = \dfrac{\pi h^2}{9}\dfrac{dh}{dt} \Rightarrow \dfrac{dh}{dt} = \dfrac{2 \cdot 9}{\pi(36)} = \dfrac{1}{2\pi} \approx 0.16$ m/min.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">18</div><div class="q-body">
+      <p>A 6-ft person walks away from a 15-ft lamppost at 5 ft/s. How fast is the tip of their shadow moving?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Similar triangles with $x$ = person's distance, $s$ = shadow length: $\dfrac{x + s}{15} = \dfrac{s}{6} \Rightarrow s = \dfrac{2x}{3}$.</p>
+      <p>Tip position: $x + s = \dfrac{5x}{3}$, so tip speed $= \dfrac{5}{3}(5) = \dfrac{25}{3} \approx 8.3$ ft/s.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">19</div><div class="q-body">
+      <p>A kite is 100 ft high, moving horizontally at 8 ft/s. How fast is the string paying out when 125 ft of string is released?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$z^2 = x^2 + 100^2$; at $z = 125$, $x = \sqrt{125^2 - 100^2} = 75$.</p>
+      <p>$z\dot z = x\dot x \Rightarrow \dot z = \dfrac{75(8)}{125} = 4.8$ ft/s.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">20</div><div class="q-body">
+      <p>Challenge: the base of a triangle grows at 1 cm/s while its height shrinks at 2 cm/s. Is the area growing or shrinking when $b = 10$ and $h = 8$?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$A = \dfrac{1}{2}bh \Rightarrow \dot A = \dfrac{1}{2}\left(\dot b h + b\dot h\right) = \dfrac{1}{2}\left[(1)(8) + (10)(-2)\right] = -6$ cm²/s.</p>
+      <p><strong>Shrinking</strong> at 6 cm²/s — the height loss outweighs the base gain.</p>
+    </div></details>
+  </div>
+
+  <a class="next" href="#" onclick="return false;">
+    <div>
+      <div class="lbl">Next module</div>
+      <div class="name">08 · Applications of Derivatives</div>
+    </div>
+    <div class="arrow">→</div>
+  </a>
+
+</main>
+
+<script>
+  window.addEventListener("DOMContentLoaded", function(){
+    function render(){
+      if (window.renderMathInElement){
+        renderMathInElement(document.body, {
+          delimiters:[
+            {left:"$$", right:"$$", display:true},
+            {left:"$",  right:"$",  display:false},
+            {left:"\\[", right:"\\]", display:true},
+            {left:"\\(", right:"\\)", display:false}
+          ],
+          throwOnError:false
+        });
+      } else {
+        setTimeout(render, 60);
+      }
+    }
+    render();
+  });
+</script>
+</body>
+</html>

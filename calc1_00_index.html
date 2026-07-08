@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculus 1 — Complete Course Index</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:        #0a0e17;
+    --bg-grid:   rgba(120,140,180,0.055);
+    --surface:   #111725;
+    --surface-2: #161d2e;
+    --border:    rgba(150,170,210,0.12);
+    --border-strong: rgba(150,170,210,0.25);
+
+    --ink:       #e8eef7;
+    --ink-soft:  #aab4c5;
+    --ink-faint: #6f7b90;
+
+    --poly:  #38bdf8;
+    --rat:   #c084fc;
+    --exp:   #fbbf24;
+    --log:   #fb7185;
+    --trig:  #34d399;
+
+    --maxw: 880px;
+    --radius: 14px;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0 / 32px 32px,
+      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0 / 32px 32px,
+      radial-gradient(1400px 700px at 50% -15%, rgba(56,189,248,0.12), transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, sans-serif;
+    font-size:17px;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .rail{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; gap:.6rem;
+    padding:.7rem clamp(1rem,4vw,2rem);
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.74rem; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink-faint);
+    background:rgba(10,14,23,0.78);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .rail b{ color:var(--ink-soft); font-weight:500; }
+  .rail .dot{ width:7px;height:7px;border-radius:50%;
+    background:conic-gradient(var(--poly),var(--rat),var(--exp),var(--log),var(--trig),var(--poly));
+    box-shadow:0 0 10px var(--poly); }
+
+  main{ max-width:var(--maxw); margin:0 auto; padding:0 clamp(1rem,4vw,2rem) 5rem; }
+
+  .hero{ padding:3.6rem 0 2rem; text-align:left; }
+  .eyebrow{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.8rem; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--exp);
+  }
+  h1{
+    font-family:"Space Grotesk", sans-serif;
+    font-weight:700; font-size:clamp(2.4rem,7vw,4rem);
+    line-height:1.02; letter-spacing:-0.02em;
+    margin:.8rem 0 .9rem;
+    background:linear-gradient(100deg,var(--poly) 0%,var(--trig) 35%,var(--exp) 65%,var(--log) 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .lede{
+    color:var(--ink-soft); font-size:1.1rem; max-width:62ch;
+    border-left:2px solid var(--border-strong); padding-left:1rem;
+  }
+
+  .stats{
+    display:flex; flex-wrap:wrap; gap:1rem; margin-top:1.8rem;
+  }
+  .stat{
+    padding:.7rem 1.1rem; background:var(--surface); border:1px solid var(--border);
+    border-radius:10px; font-family:"IBM Plex Mono",monospace; font-size:.82rem;
+    color:var(--ink-soft);
+  }
+  .stat b{ color:var(--ink); font-family:"Space Grotesk",sans-serif; font-size:1.05rem; margin-right:.35rem; }
+
+  .section-tag{
+    display:flex; align-items:center; gap:.8rem;
+    margin:3rem 0 1.2rem;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.78rem; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-faint);
+  }
+  .section-tag::after{ content:""; flex:1; height:1px; background:var(--border); }
+  .section-tag b{ color:var(--ink); font-weight:600; }
+
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+  @media (max-width:660px){ .grid{ grid-template-columns:1fr; } }
+
+  a.card{
+    display:flex; flex-direction:column; gap:.55rem;
+    padding:1.25rem 1.3rem 1.15rem;
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); text-decoration:none; color:var(--ink);
+    position:relative; overflow:hidden;
+    transition:border-color .2s ease, transform .15s ease;
+  }
+  a.card::before{
+    content:""; position:absolute; left:0; top:0; bottom:0; width:3px;
+    background:var(--c, var(--poly));
+  }
+  a.card:hover{ border-color:var(--border-strong); transform:translateY(-2px); }
+  a.card:focus-visible{ outline:2px solid var(--exp); outline-offset:3px; }
+
+  .card-top{ display:flex; align-items:center; gap:.75rem; }
+  .badge{
+    flex:none; width:2.1rem; height:2.1rem; border-radius:8px;
+    display:grid; place-items:center;
+    font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:.92rem;
+    color:var(--bg); background:var(--c, var(--poly));
+    box-shadow:0 0 16px -3px var(--c, var(--poly));
+  }
+  .card h3{
+    margin:0; font-family:"Space Grotesk",sans-serif; font-weight:600;
+    font-size:1.06rem; letter-spacing:.01em; line-height:1.25;
+  }
+  .card .kind{
+    font-family:"IBM Plex Mono",monospace; font-size:.68rem;
+    letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint);
+  }
+  .card p{ margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.55; }
+  .card .go{
+    margin-top:auto; padding-top:.5rem;
+    font-family:"IBM Plex Mono",monospace; font-size:.75rem;
+    letter-spacing:.12em; text-transform:uppercase; color:var(--c, var(--poly));
+  }
+
+  .plan{
+    margin-top:1rem; padding:1.2rem 1.4rem;
+    background:linear-gradient(120deg, rgba(52,211,153,0.09), rgba(56,189,248,0.05));
+    border:1px solid var(--border-strong); border-radius:var(--radius);
+    color:var(--ink-soft); font-size:.95rem;
+  }
+  .plan b{ color:var(--trig); }
+  .plan .path{
+    display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.7rem;
+    font-family:"IBM Plex Mono",monospace; font-size:.78rem;
+  }
+  .plan .path span{
+    padding:.15rem .55rem; border-radius:6px;
+    background:var(--surface); border:1px solid var(--border); color:var(--ink-soft);
+  }
+  .plan .path em{ color:var(--ink-faint); font-style:normal; align-self:center; }
+
+  footer{
+    margin-top:3rem; padding-top:1.4rem; border-top:1px solid var(--border);
+    font-family:"IBM Plex Mono",monospace; font-size:.75rem;
+    letter-spacing:.1em; color:var(--ink-faint);
+  }
+</style>
+</head>
+<body>
+
+<div class="rail">
+  <span class="dot"></span>
+  <b>Calculus&nbsp;1</b> · Complete Course · 10 Modules
+</div>
+
+<main>
+
+  <header class="hero">
+    <div class="eyebrow">Self-Study Course</div>
+    <h1>Calculus 1,<br>Rebuilt From Zero</h1>
+    <p class="lede">Ten modules that take you from rusty algebra to the Fundamental Theorem of Calculus. Each one pairs a ~1000-word tutorial with 20 practice problems and tap-to-reveal solutions.</p>
+    <div class="stats">
+      <div class="stat"><b>10</b> modules</div>
+      <div class="stat"><b>200</b> practice problems</div>
+      <div class="stat"><b>~10k</b> words of tutorial</div>
+      <div class="stat"><b>200</b> worked solutions</div>
+    </div>
+  </header>
+
+  <div class="section-tag"><b>Foundation</b></div>
+  <div class="grid">
+    <a class="card" style="--c:var(--poly)" href="calc1_01_precalculus_review.html">
+      <div class="card-top"><div class="badge">01</div><div><h3>Pre-Calculus &amp; Functions Review</h3><div class="kind">Foundation</div></div></div>
+      <p>Domains, function families, composition, transformations, the unit circle in radians, exponent and log rules, and the factoring skills that resolve 0/0 limits.</p>
+      <div class="go">Start here →</div>
+    </a>
+    <a class="card" style="--c:var(--rat)" href="calc1_02_limits.html">
+      <div class="card-top"><div class="badge">02</div><div><h3>Limits</h3><div class="kind">Core Concept</div></div></div>
+      <p>Approaching vs. arriving, one-sided limits, defeating 0/0 with factoring and conjugates, the Squeeze Theorem, asymptotes, and the two special trig limits.</p>
+      <div class="go">Open module →</div>
+    </a>
+    <a class="card" style="--c:var(--trig)" href="calc1_03_continuity.html">
+      <div class="card-top"><div class="badge">03</div><div><h3>Continuity</h3><div class="kind">Core Concept</div></div></div>
+      <p>The three-part definition, removable vs. jump vs. infinite discontinuities, gluing piecewise functions, and the Intermediate Value Theorem.</p>
+      <div class="go">Open module →</div>
+    </a>
+    <a class="card" style="--c:var(--poly)" href="calc1_04_derivative_definition.html">
+      <div class="card-top"><div class="badge">04</div><div><h3>The Derivative (Definition)</h3><div class="kind">Core Concept</div></div></div>
+      <p>Secant to tangent, the limit definition and its alternate form, notation, interpretation with units, tangent lines, and where differentiability fails.</p>
+      <div class="go">Open module →</div>
+    </a>
+  </div>
+
+  <div class="section-tag"><b>Mechanics</b></div>
+  <div class="grid">
+    <a class="card" style="--c:var(--exp)" href="calc1_05_differentiation_rules.html">
+      <div class="card-top"><div class="badge">05</div><div><h3>Differentiation Rules</h3><div class="kind">Mechanics</div></div></div>
+      <p>Power, product, quotient, and chain rules — the four moves that replace limit computations with algebra, plus the rewrite-first habit that prevents most errors.</p>
+      <div class="go">Open module →</div>
+    </a>
+    <a class="card" style="--c:var(--trig)" href="calc1_06_special_functions.html">
+      <div class="card-top"><div class="badge">06</div><div><h3>Derivatives of Special Functions</h3><div class="kind">Mechanics</div></div></div>
+      <p>Trig, exponentials, logarithms, and inverse trig — the formula card to memorize cold, every chain-rule variant, and logarithmic differentiation.</p>
+      <div class="go">Open module →</div>
+    </a>
+    <a class="card" style="--c:var(--rat)" href="calc1_07_implicit_related_rates.html">
+      <div class="card-top"><div class="badge">07</div><div><h3>Implicit Differentiation &amp; Related Rates</h3><div class="kind">Technique</div></div></div>
+      <p>Differentiating curves not solved for y, tangents to circles and folia, and the five-step related-rates method: ladders, cones, shadows, and departing cars.</p>
+      <div class="go">Open module →</div>
+    </a>
+    <a class="card" style="--c:var(--log)" href="calc1_08_applications.html">
+      <div class="card-top"><div class="badge">08</div><div><h3>Applications of Derivatives</h3><div class="kind">Analysis</div></div></div>
+      <p>Critical points, both derivative tests, concavity and inflection, absolute extrema on closed intervals, the Mean Value Theorem, and curve sketching.</p>
+      <div class="go">Open module →</div>
+    </a>
+  </div>
+
+  <div class="section-tag"><b>Payoff</b></div>
+  <div class="grid">
+    <a class="card" style="--c:var(--exp)" href="calc1_09_optimization.html">
+      <div class="card-top"><div class="badge">09</div><div><h3>Optimization</h3><div class="kind">Applied</div></div></div>
+      <p>The six-step translation from word problem to one-variable max/min hunt — fences, boxes, cans, closest points, revenue, and the swimmer who discovers Snell's law.</p>
+      <div class="go">Open module →</div>
+    </a>
+    <a class="card" style="--c:var(--trig)" href="calc1_10_integrals.html">
+      <div class="card-top"><div class="badge">10</div><div><h3>Antiderivatives &amp; the Definite Integral</h3><div class="kind">Capstone</div></div></div>
+      <p>Reversing the derivative, Riemann sums, the definite integral, both parts of the Fundamental Theorem of Calculus, and u-substitution — the bridge to Calc 2.</p>
+      <div class="go">Finish here →</div>
+    </a>
+  </div>
+
+  <div class="section-tag"><b>How to use this course</b></div>
+  <div class="plan">
+    <p style="margin:0"><b>Work in order.</b> The modules are deliberately chained: Module 01's factoring resolves Module 02's limits; the chain rule of 05 powers 06 and 07; Module 03's IVT sets up 08's Extreme Value Theorem; and 08's MVT justifies the "+C" of Module 10. Attempt every practice problem before revealing its solution — the reveal is a check, not a shortcut. If a module feels hard, the fix is usually one module back, not one module forward.</p>
+    <div class="path">
+      <span>01</span><em>→</em><span>02</span><em>→</em><span>03</span><em>→</em><span>04</span><em>→</em><span>05</span><em>→</em><span>06</span><em>→</em><span>07</span><em>→</em><span>08</span><em>→</em><span>09</span><em>→</em><span>10</span>
+    </div>
+  </div>
+
+  <footer>
+    Calculus 1 · 10 modules · 200 problems · dark mode study guide
+  </footer>
+
+</main>
+
+</body>
+</html>

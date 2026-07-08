@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calc 1 · 10 — Antiderivatives & the Definite Integral</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+
+<style>
+  :root{
+    --bg:        #0a0e17;
+    --bg-grid:   rgba(120,140,180,0.055);
+    --surface:   #111725;
+    --surface-2: #161d2e;
+    --border:    rgba(150,170,210,0.12);
+    --border-strong: rgba(150,170,210,0.22);
+
+    --ink:       #e8eef7;
+    --ink-soft:  #aab4c5;
+    --ink-faint: #6f7b90;
+
+    --poly:  #38bdf8;
+    --rat:   #c084fc;
+    --exp:   #fbbf24;
+    --log:   #fb7185;
+    --trig:  #34d399;
+
+    --maxw: 780px;
+    --radius: 14px;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0 / 32px 32px,
+      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0 / 32px 32px,
+      radial-gradient(1200px 600px at 70% -10%, rgba(52,211,153,0.12), transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, sans-serif;
+    font-size:17px;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .katex{ font-size:1.04em; }
+  .katex-display{ margin:1.3em 0; padding:.4em .2em; overflow-x:auto; overflow-y:hidden; }
+
+  .rail{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; gap:.6rem;
+    padding:.7rem clamp(1rem,4vw,2rem);
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.74rem; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink-faint);
+    background:rgba(10,14,23,0.78);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .rail b{ color:var(--ink-soft); font-weight:500; }
+  .rail .dot{ width:7px;height:7px;border-radius:50%;background:var(--trig);box-shadow:0 0 10px var(--trig); }
+
+  main{ max-width:var(--maxw); margin:0 auto; padding:0 clamp(1rem,4vw,2rem) 5rem; }
+
+  .hero{ padding:3.2rem 0 1.5rem; }
+  .eyebrow{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.8rem; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--exp);
+    display:flex; align-items:center; gap:.75rem;
+  }
+  .eyebrow .num{
+    font-family:"Space Grotesk", sans-serif;
+    font-size:.95rem; font-weight:700;
+    color:var(--bg); background:var(--exp);
+    padding:.05rem .5rem; border-radius:6px; letter-spacing:.05em;
+  }
+  h1{
+    font-family:"Space Grotesk", sans-serif;
+    font-weight:700; font-size:clamp(2.1rem,6vw,3.3rem);
+    line-height:1.05; letter-spacing:-0.02em;
+    margin:1rem 0 .8rem;
+    background:linear-gradient(100deg,var(--trig),var(--poly) 55%,var(--exp));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .lede{
+    color:var(--ink-soft); font-size:1.08rem; max-width:60ch;
+    border-left:2px solid var(--border-strong); padding-left:1rem;
+  }
+
+  figure.plot{
+    margin:2rem 0 0; padding:1rem;
+    background:linear-gradient(180deg,var(--surface),var(--bg));
+    border:1px solid var(--border); border-radius:var(--radius);
+  }
+  figure.plot svg{ width:100%; height:auto; display:block; }
+  .legend{
+    display:flex; flex-wrap:wrap; gap:1.1rem;
+    margin-top:.6rem; padding:0 .3rem;
+    font-family:"IBM Plex Mono", monospace; font-size:.82rem; color:var(--ink-soft);
+  }
+  .legend span{ display:inline-flex; align-items:center; gap:.45rem; }
+  .legend i{ width:22px; height:3px; border-radius:2px; display:inline-block; }
+
+  .curve{ fill:none; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round;
+    filter:drop-shadow(0 0 6px currentColor); }
+  .axis{ stroke:rgba(160,175,205,0.35); stroke-width:1.2; }
+  .tick{ stroke:rgba(160,175,205,0.18); stroke-width:1; }
+
+  @media (prefers-reduced-motion:no-preference){
+    .curve{ stroke-dasharray:1400; stroke-dashoffset:1400; animation:draw 1.6s ease forwards; }
+    .curve.c2{ animation-delay:.35s; }
+    .curve.c3{ animation-delay:.7s; }
+    @keyframes draw{ to{ stroke-dashoffset:0; } }
+  }
+
+  .section-tag{
+    display:flex; align-items:center; gap:.8rem;
+    margin:3.5rem 0 1.2rem;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.78rem; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-faint);
+  }
+  .section-tag::after{ content:""; flex:1; height:1px; background:var(--border); }
+  .section-tag b{ color:var(--ink); font-weight:600; }
+
+  h2{
+    font-family:"Space Grotesk", sans-serif;
+    font-weight:600; font-size:1.02rem; letter-spacing:.02em;
+    margin:2.4rem 0 .6rem; padding-left:.9rem;
+    border-left:3px solid var(--accent, var(--poly));
+    color:var(--ink);
+  }
+  h2 .k{ color:var(--accent, var(--poly)); font-family:"IBM Plex Mono",monospace; font-size:.8rem; margin-right:.4rem; }
+
+  p{ margin:.7rem 0; color:var(--ink); }
+  strong{ color:#fff; font-weight:600; }
+
+  ul.clean{ list-style:none; padding:0; margin:1rem 0; display:grid; gap:.55rem; }
+  ul.clean li{
+    padding:.7rem .9rem; background:var(--surface); border:1px solid var(--border);
+    border-radius:10px; border-left:3px solid var(--fam,var(--poly));
+  }
+  ul.clean li .fam{ font-weight:600; color:var(--fam,var(--poly)); }
+
+  ol.rules{ padding-left:1.2rem; margin:1rem 0; }
+  ol.rules li{ margin:.4rem 0; }
+
+  .callout{
+    margin:2rem 0; padding:1.1rem 1.3rem;
+    background:linear-gradient(120deg, rgba(52,211,153,0.10), rgba(56,189,248,0.06));
+    border:1px solid var(--border-strong); border-radius:var(--radius);
+  }
+  .callout b{ color:var(--trig); }
+
+  .q{
+    margin:1rem 0; background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); overflow:hidden;
+    transition:border-color .2s ease;
+  }
+  .q:hover{ border-color:var(--border-strong); }
+  .q-head{ display:flex; gap:.9rem; padding:1.1rem 1.2rem; }
+  .q-num{
+    flex:none; width:2rem; height:2rem; border-radius:8px;
+    display:grid; place-items:center;
+    font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:.9rem;
+    color:var(--bg); background:var(--qc,var(--poly));
+    box-shadow:0 0 14px -2px var(--qc,var(--poly));
+  }
+  .q-body{ flex:1; }
+  .q-body p{ margin:.2rem 0; }
+
+  details{ border-top:1px solid var(--border); }
+  summary{
+    list-style:none; cursor:pointer; user-select:none;
+    padding:.7rem 1.2rem .7rem 3.1rem;
+    font-family:"IBM Plex Mono",monospace; font-size:.78rem;
+    letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint);
+    display:flex; align-items:center; gap:.5rem;
+    transition:color .15s ease, background .15s ease;
+  }
+  summary::-webkit-details-marker{ display:none; }
+  summary::before{
+    content:"▸"; color:var(--qc,var(--poly)); font-size:.9rem;
+    transition:transform .2s ease;
+  }
+  details[open] summary::before{ transform:rotate(90deg); }
+  summary:hover{ color:var(--ink-soft); background:rgba(255,255,255,0.02); }
+  .solution{ padding:.2rem 1.2rem 1.2rem 3.1rem; color:var(--ink-soft); }
+  .solution p{ margin:.5rem 0; }
+
+  .next{
+    margin-top:3.5rem; padding:1.4rem 1.5rem;
+    display:flex; align-items:center; justify-content:space-between; gap:1rem;
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  }
+  .next .lbl{ font-family:"IBM Plex Mono",monospace; font-size:.72rem; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--ink-faint); }
+  .next .name{ font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:1.15rem; color:var(--trig); }
+  .next .arrow{ color:var(--trig); font-size:1.4rem; }
+
+  a:focus-visible, summary:focus-visible{ outline:2px solid var(--exp); outline-offset:3px; border-radius:4px; }
+
+  @media (max-width:520px){
+    body{ font-size:16px; }
+    .q-head{ padding:.9rem; }
+    .solution{ padding-left:1.2rem; }
+    summary{ padding-left:1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="rail">
+  <span class="dot"></span>
+  <b>Calculus&nbsp;1</b> · Module 10 / 10 · Antiderivatives & the Definite Integral
+</div>
+
+<main>
+
+  <header class="hero">
+    <div class="eyebrow"><span class="num">10</span> Capstone Module</div>
+    <h1>Integrals</h1>
+    <p class="lede">Reverse the derivative, measure the area under a curve, and meet the Fundamental Theorem — the bridge that makes them the same thing.</p>
+
+    <figure class="plot">
+      <svg viewBox="0 0 600 340" role="img" aria-label="A curve with Riemann rectangles shaded beneath it, approximating the area under the graph.">
+        <g class="tick">
+          <line x1="60" y1="40" x2="60" y2="300"/><line x1="140" y1="40" x2="140" y2="300"/>
+          <line x1="220" y1="40" x2="220" y2="300"/><line x1="380" y1="40" x2="380" y2="300"/>
+          <line x1="460" y1="40" x2="460" y2="300"/><line x1="540" y1="40" x2="540" y2="300"/>
+          <line x1="60" y1="60" x2="540" y2="60"/><line x1="60" y1="170" x2="540" y2="170"/>
+          <line x1="60" y1="280" x2="540" y2="280"/>
+        </g>
+        <g class="axis">
+          <line x1="60" y1="300" x2="560" y2="300"/>
+          <line x1="80" y1="30" x2="80" y2="315"/>
+        </g>
+        <g opacity="0.55">
+          <rect x="120" y="252" width="60" height="48" fill="var(--trig)" opacity="0.35" stroke="var(--trig)" stroke-width="1.5"/>
+          <rect x="180" y="226" width="60" height="74" fill="var(--trig)" opacity="0.35" stroke="var(--trig)" stroke-width="1.5"/>
+          <rect x="240" y="192" width="60" height="108" fill="var(--trig)" opacity="0.35" stroke="var(--trig)" stroke-width="1.5"/>
+          <rect x="300" y="152" width="60" height="148" fill="var(--trig)" opacity="0.35" stroke="var(--trig)" stroke-width="1.5"/>
+          <rect x="360" y="118" width="60" height="182" fill="var(--trig)" opacity="0.35" stroke="var(--trig)" stroke-width="1.5"/>
+          <rect x="420" y="92" width="60" height="208" fill="var(--trig)" opacity="0.35" stroke="var(--trig)" stroke-width="1.5"/>
+        </g>
+        <path class="curve c1" style="color:var(--poly);stroke:var(--poly)"
+          d="M 100 268 C 220 240, 360 170, 500 70"/>
+        <text x="250" y="332" fill="var(--ink-faint)" font-family="IBM Plex Mono" font-size="14">n rectangles, n → ∞</text>
+        <text x="404" y="80" fill="var(--poly)" font-family="IBM Plex Mono" font-size="15">y = f(x)</text>
+      </svg>
+      <div class="legend"><span><i style="background:var(--poly)"></i> f(x)</span>
+        <span><i style="background:var(--trig)"></i> Riemann rectangles → the definite integral as their limit</span></div>
+    </figure>
+  </header>
+
+  <div class="section-tag"><b>Tutorial</b> · ~1000 words</div>
+
+  <h2 style="--accent:var(--trig)"><span class="k">01</span>Antiderivatives: differentiation in reverse</h2>
+  <p>An <strong>antiderivative</strong> of $f$ is any function $F$ with $F' = f$. Since $\frac{d}{dx}x^2 = 2x$, the function $x^2$ is an antiderivative of $2x$ — and so are $x^2 + 5$ and $x^2 - 17$, since constants die under differentiation. The MVT corollary from Module 08 guarantees that's the <em>only</em> ambiguity: any two antiderivatives differ by a constant. Hence the notation and its famous tail:</p>
+  <p>$$\int f(x)\,dx = F(x) + C$$</p>
+  <p>The symbol $\int f(x)\,dx$ is the <strong>indefinite integral</strong> — the whole family of antiderivatives — and omitting the $+C$ is the most reliably penalized error in Calc 1.</p>
+
+  <h2 style="--accent:var(--poly)"><span class="k">02</span>The basic integration formulas</h2>
+  <p>Run every derivative formula backwards. The reverse power rule: <em>raise the exponent by one, divide by the new exponent</em>:</p>
+  <p>$$\int x^n\,dx = \frac{x^{n+1}}{n+1} + C \quad (n \ne -1) \qquad\qquad \int \frac{1}{x}\,dx = \ln|x| + C$$</p>
+  <p>The $n = -1$ case is exactly the gap $\ln x$ fills — pleasingly, the one power the rule can't handle is covered by the one non-power derivative that produces a power. The rest of the card:</p>
+  <p>$$\int e^x dx = e^x + C \qquad \int \sin x\,dx = -\cos x + C \qquad \int \cos x\,dx = \sin x + C \qquad \int \sec^2 x\,dx = \tan x + C$$</p>
+  <p>Sign check for trig: differentiate your answer and see if you land back on the integrand — a five-second verification that catches the $\pm\cos$ confusion every time. Linearity works as before: integrate sums term by term and slide constants out front.</p>
+
+  <h2 style="--accent:var(--exp)"><span class="k">03</span>Initial value problems</h2>
+  <p>The $+C$ isn't decoration — it's a dial, and one data point sets it. If $f'(x) = 6x$ and $f(1) = 4$: integrate to get $f(x) = 3x^2 + C$, then impose the condition: $3 + C = 4$, so $C = 1$ and $f(x) = 3x^2 + 1$. Physics runs this twice: acceleration integrates to velocity (constant set by initial velocity), velocity integrates to position (constant set by initial position). A projectile with $a = -32$ ft/s², launched upward at $64$ ft/s from height $80$ ft, has $v(t) = -32t + 64$ and $s(t) = -16t^2 + 64t + 80$ — every constant earned from an initial condition.</p>
+
+  <h2 style="--accent:var(--log)"><span class="k">04</span>The area problem and Riemann sums</h2>
+  <p>Now the second, apparently unrelated, story. To measure the area under $y = f(x)$ over $[a, b]$, slice the interval into $n$ strips of width $\Delta x = \frac{b-a}{n}$, erect a rectangle on each (height sampled at, say, each strip's left edge, right edge, or midpoint), and add them up:</p>
+  <p>$$\text{Area} \approx \sum_{i=1}^{n} f(x_i^*)\,\Delta x$$</p>
+  <p>That's a <strong>Riemann sum</strong> — the hero graph shows six right-endpoint rectangles under a curve. Coarse rectangles over- or under-shoot, but as $n \to \infty$ the error dies, and the limit is the <strong>definite integral</strong>:</p>
+  <p>$$\int_a^b f(x)\,dx = \lim_{n\to\infty}\sum_{i=1}^{n} f(x_i^*)\,\Delta x$$</p>
+  <p>Continuous functions (Module 03, one last payoff) are guaranteed to have this limit exist.</p>
+
+  <h2 style="--accent:var(--rat)"><span class="k">05</span>What the definite integral means</h2>
+  <p>$\int_a^b f(x)\,dx$ is a <em>number</em>, not a family of functions — note the contrast with the indefinite integral. It computes <strong>signed</strong> area: regions below the $x$-axis count negative, so $\int_0^{2\pi}\sin x\,dx = 0$ by symmetry. More broadly it accumulates anything: if $v(t)$ is velocity, $\int_a^b v\,dt$ is displacement (net change in position); if $r(t)$ is a flow rate in liters/min, the integral is total liters. Useful properties fall straight out of the picture: $\int_a^b = \int_a^c + \int_c^b$ (split the region), $\int_a^a = 0$, and swapping the bounds flips the sign.</p>
+
+  <h2 style="--accent:var(--trig)"><span class="k">06</span>The Fundamental Theorem of Calculus</h2>
+  <p>Here is the punchline of the entire course: the area problem and the antiderivative problem are the same problem. <strong>FTC Part 2</strong> (the evaluation theorem): if $F$ is any antiderivative of a continuous $f$, then</p>
+  <p>$$\int_a^b f(x)\,dx = F(b) - F(a)$$</p>
+  <p>No rectangles, no limits — find an antiderivative and subtract. Example: $\int_0^2 x^2\,dx = \left[\frac{x^3}{3}\right]_0^2 = \frac{8}{3}$. Exact area under a parabola, three symbols of work. <strong>FTC Part 1</strong> runs the bridge the other way: the accumulation function $g(x) = \int_a^x f(t)\,dt$ is an antiderivative of $f$, i.e. $g'(x) = f(x)$ — differentiating an integral hands back the integrand. Together the parts say differentiation and integration are inverse operations. Note the $+C$ vanishes in definite integrals: it cancels in the subtraction, so leave it out.</p>
+
+  <h2 style="--accent:var(--poly)"><span class="k">07</span>u-substitution: the chain rule in reverse</h2>
+  <p>Most integrands aren't on the formula card — they're chain-rule outputs, and <strong>substitution</strong> un-chains them. To compute $\int 2x(x^2+1)^5\,dx$: set $u = x^2 + 1$, so $du = 2x\,dx$, and the integral collapses to $\int u^5\,du = \frac{u^6}{6} + C = \frac{(x^2+1)^6}{6} + C$. The skill is spotting a function <em>and its derivative</em> sharing the integrand — the $2x$ standing next to $(x^2+1)^5$ is the fingerprint. If the constant is off by a factor, adjust: $\int x\,e^{x^2}dx$ has $du = 2x\,dx$, so write it as $\frac12\int e^u du = \frac12 e^{x^2} + C$. For definite integrals, convert the bounds to $u$-values and never return to $x$ at all.</p>
+
+  <h2 style="--accent:var(--exp)"><span class="k">08</span>Area between the FTC and the future</h2>
+  <p>Two closing applications. <strong>Exact areas:</strong> the area under $\sin x$ from $0$ to $\pi$ is $\int_0^\pi \sin x\,dx = [-\cos x]_0^\pi = 1 - (-1) = 2$ — a transcendental curve enclosing a perfectly clean area, courtesy of FTC. <strong>Net change:</strong> FTC rewritten as $F(b) = F(a) + \int_a^b F'(t)\,dt$ says any quantity's final value is its initial value plus the accumulated rate — the sentence that runs physics, economics, and biology. Everything in Calc 2 (integration techniques, volumes, series) grows from this module; if the FTC feels almost too convenient, that's the correct response to one of mathematics' genuinely great theorems.</p>
+
+  <div class="callout">
+    <p style="margin:0"><b>The course, closed.</b> Derivatives measure instantaneous change; integrals accumulate it; the FTC says each undoes the other: $\int_a^b f'(x)\,dx = f(b) - f(a)$. Integrate with the reverse power rule (+C!), fix constants with initial conditions, evaluate definite integrals by antiderivative-and-subtract, and un-chain composite integrands with u-substitution.</p>
+  </div>
+
+  <div class="section-tag"><b>Practice</b> · 20 problems · tap to reveal each solution</div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">1</div><div class="q-body">
+      <p>Evaluate $\displaystyle\int x^3\,dx$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$\dfrac{x^4}{4} + C$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">2</div><div class="q-body">
+      <p>Evaluate $\displaystyle\int (3x^2 - 4x + 5)\,dx$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$x^3 - 2x^2 + 5x + C$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">3</div><div class="q-body">
+      <p>Evaluate $\displaystyle\int \sqrt{x}\,dx$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$\displaystyle\int x^{1/2}dx = \dfrac{x^{3/2}}{3/2} + C = \dfrac{2}{3}x^{3/2} + C$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">4</div><div class="q-body">
+      <p>Evaluate $\displaystyle\int \frac{1}{x^2}\,dx$ and $\displaystyle\int \frac{1}{x}\,dx$ — and explain why they're different species.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$\displaystyle\int x^{-2}dx = -x^{-1} + C = -\dfrac{1}{x} + C$; but $n = -1$ breaks the power rule, so $\displaystyle\int \dfrac{1}{x}dx = \ln|x| + C$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">5</div><div class="q-body">
+      <p>Evaluate $\displaystyle\int \left(2\sin x - 3\cos x + e^x\right) dx$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$-2\cos x - 3\sin x + e^x + C$. (Differentiate to check the trig signs.)</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">6</div><div class="q-body">
+      <p>Simplify first: $\displaystyle\int \frac{x^3 + 2x}{x}\,dx$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Integrand $= x^2 + 2$, so the integral is $\dfrac{x^3}{3} + 2x + C$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">7</div><div class="q-body">
+      <p>Initial value problem: $f'(x) = 6x$ with $f(1) = 4$. Find $f$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$f(x) = 3x^2 + C$; $3 + C = 4 \Rightarrow C = 1$. $f(x) = 3x^2 + 1$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">8</div><div class="q-body">
+      <p>A projectile has $a(t) = -32$ ft/s², initial velocity $64$ ft/s upward, initial height $80$ ft. Find $s(t)$ and the maximum height.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$v = -32t + 64$; $s = -16t^2 + 64t + 80$.</p>
+      <p>Peak when $v = 0$: $t = 2$, $s(2) = -64 + 128 + 80 = 144$ ft.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">9</div><div class="q-body">
+      <p>Estimate $\displaystyle\int_0^4 x^2\,dx$ with a right-endpoint Riemann sum, $n = 4$. Is it an over- or underestimate?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$\Delta x = 1$; heights at $1,2,3,4$: sum $= 1 + 4 + 9 + 16 = 30$.</p>
+      <p>$x^2$ is increasing, so right endpoints <strong>overestimate</strong>. (Exact value: $\tfrac{64}{3} \approx 21.3$.)</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">10</div><div class="q-body">
+      <p>Now compute $\displaystyle\int_0^4 x^2\,dx$ exactly with the FTC.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$\left[\dfrac{x^3}{3}\right]_0^4 = \dfrac{64}{3}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">11</div><div class="q-body">
+      <p>Evaluate $\displaystyle\int_1^4 (2x + 1)\,dx$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$\left[x^2 + x\right]_1^4 = (16 + 4) - (1 + 1) = 18$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">12</div><div class="q-body">
+      <p>Evaluate $\displaystyle\int_0^\pi \sin x\,dx$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$[-\cos x]_0^\pi = -(-1) - (-1) = 2$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">13</div><div class="q-body">
+      <p>Evaluate $\displaystyle\int_1^e \frac{1}{x}\,dx$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$[\ln|x|]_1^e = \ln e - \ln 1 = 1$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">14</div><div class="q-body">
+      <p>Explain why $\displaystyle\int_0^{2\pi} \sin x\,dx = 0$ even though the curve clearly encloses area.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>The integral computes <strong>signed</strong> area: the hump above the axis on $[0,\pi]$ (+2) exactly cancels the hump below on $[\pi, 2\pi]$ (−2). Total <em>geometric</em> area would be $\int_0^{2\pi}|\sin x|\,dx = 4$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">15</div><div class="q-body">
+      <p>Given $\displaystyle\int_0^5 f\,dx = 12$ and $\displaystyle\int_0^3 f\,dx = 7$, find $\displaystyle\int_3^5 f\,dx$ and $\displaystyle\int_5^0 f\,dx$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Splitting: $\displaystyle\int_3^5 = 12 - 7 = 5$. Reversing bounds flips sign: $\displaystyle\int_5^0 = -12$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">16</div><div class="q-body">
+      <p>FTC Part 1: find $\dfrac{d}{dx}\displaystyle\int_0^x \sin(t^2)\,dt$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Differentiating the accumulation function returns the integrand: $\sin(x^2)$. No integration required — or possible, in elementary terms.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">17</div><div class="q-body">
+      <p>FTC Part 1 + chain rule: find $\dfrac{d}{dx}\displaystyle\int_0^{x^2} \sqrt{1 + t^3}\,dt$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Outer derivative at the upper bound, times the bound's derivative: $\sqrt{1 + (x^2)^3}\cdot 2x = 2x\sqrt{1 + x^6}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">18</div><div class="q-body">
+      <p>u-substitution: evaluate $\displaystyle\int 2x(x^2 + 1)^5\,dx$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$u = x^2 + 1$, $du = 2x\,dx$: $\displaystyle\int u^5 du = \dfrac{u^6}{6} + C = \dfrac{(x^2+1)^6}{6} + C$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">19</div><div class="q-body">
+      <p>u-substitution with a constant fix: evaluate $\displaystyle\int x\,e^{x^2}\,dx$ and $\displaystyle\int \cos(3x)\,dx$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$u = x^2$: $\dfrac{1}{2}\displaystyle\int e^u du = \dfrac{1}{2}e^{x^2} + C$.</p>
+      <p>$u = 3x$: $\dfrac{1}{3}\sin(3x) + C$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">20</div><div class="q-body">
+      <p>Challenge — definite u-sub with converted bounds: evaluate $\displaystyle\int_0^2 \frac{x}{\sqrt{x^2 + 1}}\,dx$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$u = x^2 + 1$, $du = 2x\,dx$; bounds: $x=0 \to u=1$, $x=2 \to u=5$.</p>
+      <p>$\dfrac{1}{2}\displaystyle\int_1^5 u^{-1/2} du = \left[\sqrt{u}\right]_1^5 = \sqrt{5} - 1 \approx 1.24$.</p>
+    </div></details>
+  </div>
+
+  <a class="next" href="#" onclick="return false;">
+    <div>
+      <div class="lbl">You made it</div>
+      <div class="name">Course complete — all 10 modules</div>
+    </div>
+    <div class="arrow">→</div>
+  </a>
+
+</main>
+
+<script>
+  window.addEventListener("DOMContentLoaded", function(){
+    function render(){
+      if (window.renderMathInElement){
+        renderMathInElement(document.body, {
+          delimiters:[
+            {left:"$$", right:"$$", display:true},
+            {left:"$",  right:"$",  display:false},
+            {left:"\\[", right:"\\]", display:true},
+            {left:"\\(", right:"\\)", display:false}
+          ],
+          throwOnError:false
+        });
+      } else {
+        setTimeout(render, 60);
+      }
+    }
+    render();
+  });
+</script>
+</body>
+</html>

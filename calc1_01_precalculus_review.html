@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calc 1 · 01 — Pre-Calculus &amp; Functions Review</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+
+<style>
+  :root{
+    /* graph-paper-at-night surfaces */
+    --bg:        #0a0e17;
+    --bg-grid:   rgba(120,140,180,0.055);
+    --surface:   #111725;
+    --surface-2: #161d2e;
+    --border:    rgba(150,170,210,0.12);
+    --border-strong: rgba(150,170,210,0.22);
+
+    --ink:       #e8eef7;
+    --ink-soft:  #aab4c5;
+    --ink-faint: #6f7b90;
+
+    /* plot colors — each maps to a function family, the way graphing tools assign curve colors */
+    --poly:  #38bdf8;  /* polynomial   — cyan   */
+    --rat:   #c084fc;  /* rational     — violet */
+    --exp:   #fbbf24;  /* exponential  — amber  */
+    --log:   #fb7185;  /* logarithm    — rose   */
+    --trig:  #34d399;  /* trig         — emerald*/
+
+    --maxw: 780px;
+    --radius: 14px;
+  }
+
+  *{ box-sizing:border-box; }
+
+  html{ scroll-behavior:smooth; }
+
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0 / 32px 32px,
+      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0 / 32px 32px,
+      radial-gradient(1200px 600px at 70% -10%, rgba(56,189,248,0.10), transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, sans-serif;
+    font-size:17px;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .katex{ font-size:1.04em; }
+  .katex-display{
+    margin:1.3em 0;
+    padding:.4em .2em;
+    overflow-x:auto;
+    overflow-y:hidden;
+  }
+
+  /* ---------- top rail ---------- */
+  .rail{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; gap:.6rem;
+    padding:.7rem clamp(1rem,4vw,2rem);
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.74rem; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink-faint);
+    background:rgba(10,14,23,0.78);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .rail b{ color:var(--ink-soft); font-weight:500; }
+  .rail .dot{ width:7px;height:7px;border-radius:50%;background:var(--poly);box-shadow:0 0 10px var(--poly); }
+
+  main{ max-width:var(--maxw); margin:0 auto; padding:0 clamp(1rem,4vw,2rem) 5rem; }
+
+  /* ---------- hero ---------- */
+  .hero{ padding:3.2rem 0 1.5rem; }
+  .eyebrow{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.8rem; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--exp);
+    display:flex; align-items:center; gap:.75rem;
+  }
+  .eyebrow .num{
+    font-family:"Space Grotesk", sans-serif;
+    font-size:.95rem; font-weight:700;
+    color:var(--bg); background:var(--exp);
+    padding:.05rem .5rem; border-radius:6px; letter-spacing:.05em;
+  }
+  h1{
+    font-family:"Space Grotesk", sans-serif;
+    font-weight:700; font-size:clamp(2.1rem,6vw,3.3rem);
+    line-height:1.05; letter-spacing:-0.02em;
+    margin:1rem 0 .8rem;
+    background:linear-gradient(100deg,var(--poly),var(--trig) 55%,var(--exp));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .lede{
+    color:var(--ink-soft); font-size:1.08rem; max-width:60ch;
+    border-left:2px solid var(--border-strong); padding-left:1rem;
+  }
+
+  /* ---------- signature graph ---------- */
+  figure.plot{
+    margin:2rem 0 0; padding:1rem;
+    background:linear-gradient(180deg,var(--surface),var(--bg));
+    border:1px solid var(--border); border-radius:var(--radius);
+  }
+  figure.plot svg{ width:100%; height:auto; display:block; }
+  .legend{
+    display:flex; flex-wrap:wrap; gap:1.1rem;
+    margin-top:.6rem; padding:0 .3rem;
+    font-family:"IBM Plex Mono", monospace; font-size:.82rem; color:var(--ink-soft);
+  }
+  .legend span{ display:inline-flex; align-items:center; gap:.45rem; }
+  .legend i{ width:22px; height:3px; border-radius:2px; display:inline-block; }
+
+  .curve{ fill:none; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round;
+    filter:drop-shadow(0 0 6px currentColor); }
+  .axis{ stroke:rgba(160,175,205,0.35); stroke-width:1.2; }
+  .tick{ stroke:rgba(160,175,205,0.18); stroke-width:1; }
+
+  /* draw-in animation */
+  @media (prefers-reduced-motion:no-preference){
+    .curve{ stroke-dasharray:1400; stroke-dashoffset:1400; animation:draw 1.6s ease forwards; }
+    .curve.c2{ animation-delay:.35s; }
+    .curve.c3{ animation-delay:.7s; }
+    @keyframes draw{ to{ stroke-dashoffset:0; } }
+  }
+
+  /* ---------- section scaffolding ---------- */
+  .section-tag{
+    display:flex; align-items:center; gap:.8rem;
+    margin:3.5rem 0 1.2rem;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.78rem; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-faint);
+  }
+  .section-tag::after{ content:""; flex:1; height:1px; background:var(--border); }
+  .section-tag b{ color:var(--ink); font-weight:600; }
+
+  h2{
+    font-family:"Space Grotesk", sans-serif;
+    font-weight:600; font-size:1.02rem; letter-spacing:.02em;
+    margin:2.4rem 0 .6rem; padding-left:.9rem;
+    border-left:3px solid var(--accent, var(--poly));
+    color:var(--ink);
+  }
+  h2 .k{ color:var(--accent, var(--poly)); font-family:"IBM Plex Mono",monospace; font-size:.8rem; margin-right:.4rem; }
+
+  p{ margin:.7rem 0; color:var(--ink); }
+  p.muted{ color:var(--ink-soft); }
+  strong{ color:#fff; font-weight:600; }
+
+  ul.clean{ list-style:none; padding:0; margin:1rem 0; display:grid; gap:.55rem; }
+  ul.clean li{
+    padding:.7rem .9rem; background:var(--surface); border:1px solid var(--border);
+    border-radius:10px; border-left:3px solid var(--fam,var(--poly));
+  }
+  ul.clean li .fam{ font-weight:600; color:var(--fam,var(--poly)); }
+
+  ol.rules{ padding-left:1.2rem; margin:1rem 0; }
+  ol.rules li{ margin:.4rem 0; }
+
+  /* callout */
+  .callout{
+    margin:2rem 0; padding:1.1rem 1.3rem;
+    background:linear-gradient(120deg, rgba(52,211,153,0.10), rgba(56,189,248,0.06));
+    border:1px solid var(--border-strong); border-radius:var(--radius);
+  }
+  .callout b{ color:var(--trig); }
+
+  /* ---------- practice cards ---------- */
+  .q{
+    margin:1rem 0; background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); overflow:hidden;
+    transition:border-color .2s ease;
+  }
+  .q:hover{ border-color:var(--border-strong); }
+  .q-head{ display:flex; gap:.9rem; padding:1.1rem 1.2rem; }
+  .q-num{
+    flex:none; width:2rem; height:2rem; border-radius:8px;
+    display:grid; place-items:center;
+    font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:.9rem;
+    color:var(--bg); background:var(--qc,var(--poly));
+    box-shadow:0 0 14px -2px var(--qc,var(--poly));
+  }
+  .q-body{ flex:1; }
+  .q-body p{ margin:.2rem 0; }
+
+  details{ border-top:1px solid var(--border); }
+  summary{
+    list-style:none; cursor:pointer; user-select:none;
+    padding:.7rem 1.2rem .7rem 3.1rem;
+    font-family:"IBM Plex Mono",monospace; font-size:.78rem;
+    letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint);
+    display:flex; align-items:center; gap:.5rem;
+    transition:color .15s ease, background .15s ease;
+  }
+  summary::-webkit-details-marker{ display:none; }
+  summary::before{
+    content:"▸"; color:var(--qc,var(--poly)); font-size:.9rem;
+    transition:transform .2s ease;
+  }
+  details[open] summary::before{ transform:rotate(90deg); }
+  summary:hover{ color:var(--ink-soft); background:rgba(255,255,255,0.02); }
+  .solution{ padding:.2rem 1.2rem 1.2rem 3.1rem; color:var(--ink-soft); }
+  .solution p{ margin:.5rem 0; }
+
+  /* ---------- footer ---------- */
+  .next{
+    margin-top:3.5rem; padding:1.4rem 1.5rem;
+    display:flex; align-items:center; justify-content:space-between; gap:1rem;
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  }
+  .next .lbl{ font-family:"IBM Plex Mono",monospace; font-size:.72rem; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--ink-faint); }
+  .next .name{ font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:1.15rem; color:var(--rat); }
+  .next .arrow{ color:var(--rat); font-size:1.4rem; }
+
+  a:focus-visible, summary:focus-visible{ outline:2px solid var(--exp); outline-offset:3px; border-radius:4px; }
+
+  @media (max-width:520px){
+    body{ font-size:16px; }
+    .q-head{ padding:.9rem; }
+    .solution{ padding-left:1.2rem; }
+    summary{ padding-left:1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="rail">
+  <span class="dot"></span>
+  <b>Calculus&nbsp;1</b> · Module 01 / 10 · Pre-Calculus &amp; Functions Review
+</div>
+
+<main>
+
+  <header class="hero">
+    <div class="eyebrow"><span class="num">01</span> Foundation Module</div>
+    <h1>Pre-Calculus &amp; Functions Review</h1>
+    <p class="lede">Roughly 80% of Calc&nbsp;1 struggles trace back to rusty algebra and trig — not calculus itself. Master this before you touch limits.</p>
+
+    <figure class="plot">
+      <svg viewBox="0 0 600 340" role="img" aria-label="Three function families plotted on a grid: a parabola, an exponential curve, and a sine wave.">
+        <!-- faint grid -->
+        <g class="tick">
+          <line x1="60" y1="40" x2="60" y2="300"/>
+          <line x1="140" y1="40" x2="140" y2="300"/>
+          <line x1="220" y1="40" x2="220" y2="300"/>
+          <line x1="380" y1="40" x2="380" y2="300"/>
+          <line x1="460" y1="40" x2="460" y2="300"/>
+          <line x1="540" y1="40" x2="540" y2="300"/>
+          <line x1="60" y1="60" x2="540" y2="60"/>
+          <line x1="60" y1="140" x2="540" y2="140"/>
+          <line x1="60" y1="220" x2="540" y2="220"/>
+        </g>
+        <!-- axes (origin at x=300, y=300) -->
+        <g class="axis">
+          <line x1="60" y1="300" x2="560" y2="300"/>
+          <line x1="300" y1="30" x2="300" y2="315"/>
+        </g>
+        <!-- exponential y=2^x (amber) -->
+        <polyline class="curve c1" style="color:var(--exp);stroke:var(--exp)"
+          points="180,295 220,290 260,280 300,260 340,220 380,140 400,74"/>
+        <!-- parabola y=x^2 (cyan) -->
+        <polyline class="curve c2" style="color:var(--poly);stroke:var(--poly)"
+          points="220,140 260,260 300,300 340,260 380,140"/>
+        <!-- sine y=sin x (emerald) -->
+        <polyline class="curve c3" style="color:var(--trig);stroke:var(--trig)"
+          points="180,289 210,261 240,306 270,340 300,300 330,260 360,294 390,339 420,311"/>
+      </svg>
+      <div class="legend">
+        <span><i style="background:var(--poly)"></i> y = x²</span>
+        <span><i style="background:var(--exp)"></i> y = 2ˣ</span>
+        <span><i style="background:var(--trig)"></i> y = sin x</span>
+      </div>
+    </figure>
+  </header>
+
+  <!-- ===================== TUTORIAL ===================== -->
+  <div class="section-tag"><b>Tutorial</b> · ~1000 words</div>
+
+  <h2 style="--accent:var(--poly)"><span class="k">01</span>What a function actually is</h2>
+  <p>A <strong>function</strong> is a rule that assigns to each input exactly one output. We write $f(x)$ to mean "the output of $f$ when the input is $x$." The set of allowed inputs is the <strong>domain</strong>; the set of resulting outputs is the <strong>range</strong>. The "exactly one output" part matters: $y = x^2$ is a function (each $x$ gives one $y$), but $x = y^2$ is not (each positive $x$ gives two $y$ values). The <strong>vertical line test</strong> captures this graphically — if any vertical line hits the graph more than once, it isn't a function.</p>
+  <p>Function notation is not multiplication. $f(3)$ means "evaluate $f$ at $3$," so if $f(x) = x^2 - 5$, then $f(3) = 9 - 5 = 4$. You'll also evaluate at <em>expressions</em>: $f(x+h) = (x+h)^2 - 5$. This exact move powers the limit definition of the derivative, so get comfortable now.</p>
+
+  <h2 style="--accent:var(--rat)"><span class="k">02</span>Finding the domain</h2>
+  <p>Three rules cover almost every Calc 1 case:</p>
+  <ol class="rules">
+    <li><strong>Denominators can't be zero.</strong> For $f(x) = \dfrac{1}{x-2}$, exclude $x = 2$.</li>
+    <li><strong>Even roots need non-negative insides.</strong> For $g(x) = \sqrt{x-4}$, require $x - 4 \ge 0$, so $x \ge 4$.</li>
+    <li><strong>Logarithms need positive insides.</strong> For $h(x) = \ln(x+1)$, require $x + 1 > 0$, so $x > -1$.</li>
+  </ol>
+  <p>When a function combines these, you intersect the restrictions. Domain questions reappear constantly in limits and continuity, so treat them as reflexes.</p>
+
+  <h2 style="--accent:var(--exp)"><span class="k">03</span>The function families you must know</h2>
+  <p>Calc 1 recycles the same handful of families. You should recognize each shape instantly:</p>
+  <ul class="clean">
+    <li style="--fam:var(--poly)"><span class="fam">Polynomials</span> — $x^2$, $x^3 - 2x$. Domain is always all reals. Smooth, no breaks.</li>
+    <li style="--fam:var(--rat)"><span class="fam">Rational functions</span> — ratios like $\dfrac{x+1}{x-3}$. Watch for vertical asymptotes where the denominator is zero.</li>
+    <li style="--fam:var(--exp)"><span class="fam">Exponentials</span> — $2^x$, $e^x$. Grow or decay fast; always positive; horizontal asymptote at $y=0$.</li>
+    <li style="--fam:var(--log)"><span class="fam">Logarithms</span> — $\ln x$, $\log x$. Inverse of exponentials; defined only for positive inputs; vertical asymptote at $x=0$.</li>
+    <li style="--fam:var(--trig)"><span class="fam">Trigonometric</span> — $\sin x$, $\cos x$, $\tan x$. Periodic and oscillating. $\sin$ and $\cos$ live between $-1$ and $1$.</li>
+  </ul>
+
+  <h2 style="--accent:var(--log)"><span class="k">04</span>Combining and composing functions</h2>
+  <p>You can add, subtract, multiply, and divide functions the obvious way: $(f+g)(x) = f(x) + g(x)$. More important for calculus is <strong>composition</strong>, written $(f \circ g)(x) = f(g(x))$ — you feed the output of $g$ into $f$. If $f(x) = \sqrt{x}$ and $g(x) = x^2 + 1$, then $f(g(x)) = \sqrt{x^2 + 1}$. Order matters: $g(f(x)) = (\sqrt{x})^2 + 1 = x + 1$ (for $x \ge 0$) is different. Recognizing a complicated function as a composition of simpler ones is <em>exactly</em> the skill the chain rule will demand later, so practice decomposing: $\sqrt{x^2+1}$ is "square root of (something)," where the something is $x^2 + 1$.</p>
+
+  <h2 style="--accent:var(--trig)"><span class="k">05</span>Transformations</h2>
+  <p>Starting from a base graph $y = f(x)$:</p>
+  <ul class="clean">
+    <li style="--fam:var(--trig)">$f(x) + c$ shifts <strong>up</strong> by $c$; $f(x) - c$ shifts down.</li>
+    <li style="--fam:var(--trig)">$f(x - c)$ shifts <strong>right</strong> by $c$ (note the counterintuitive sign); $f(x+c)$ shifts left.</li>
+    <li style="--fam:var(--trig)">$-f(x)$ flips vertically; $f(-x)$ flips horizontally.</li>
+    <li style="--fam:var(--trig)">$a\,f(x)$ stretches vertically by factor $a$.</li>
+  </ul>
+  <p>Knowing these lets you sketch $y = (x-2)^2 + 3$ without plotting points: it's the parabola shifted right 2 and up 3.</p>
+
+  <h2 style="--accent:var(--poly)"><span class="k">06</span>Trigonometry survival kit</h2>
+  <p>You don't need all of trig, but you need this cold. On the unit circle, $\cos\theta$ is the $x$-coordinate and $\sin\theta$ is the $y$-coordinate. Memorize the key angles:</p>
+  <p>$$\sin 0 = 0,\quad \sin\tfrac{\pi}{6} = \tfrac{1}{2},\quad \sin\tfrac{\pi}{4} = \tfrac{\sqrt2}{2},\quad \sin\tfrac{\pi}{3} = \tfrac{\sqrt3}{2},\quad \sin\tfrac{\pi}{2} = 1$$</p>
+  <p>Cosine runs the same values in reverse. The identity you'll use most is the <strong>Pythagorean identity</strong>:</p>
+  <p>$$\sin^2\theta + \cos^2\theta = 1$$</p>
+  <p>Also know $\tan\theta = \dfrac{\sin\theta}{\cos\theta}$ and that angles are measured in <strong>radians</strong> in calculus ($180° = \pi$ radians), not degrees. This is non-negotiable: the derivative formulas for trig functions only work in radians.</p>
+
+  <h2 style="--accent:var(--rat)"><span class="k">07</span>Exponent and logarithm rules</h2>
+  <p>These algebra rules get used silently in nearly every derivative and integral:</p>
+  <p>$$x^a \cdot x^b = x^{a+b}, \qquad \frac{x^a}{x^b} = x^{a-b}, \qquad (x^a)^b = x^{ab}, \qquad x^{-a} = \frac{1}{x^a}, \qquad x^{1/n} = \sqrt[n]{x}$$</p>
+  <p>For logs (where $\ln$ is log base $e$):</p>
+  <p>$$\ln(ab) = \ln a + \ln b, \qquad \ln\frac{a}{b} = \ln a - \ln b, \qquad \ln(a^b) = b\ln a, \qquad \ln e^x = x$$</p>
+  <p>Rewriting $\dfrac{1}{\sqrt{x}}$ as $x^{-1/2}$ is the kind of move that makes derivatives trivial instead of painful.</p>
+
+  <h2 style="--accent:var(--exp)"><span class="k">08</span>Factoring — the skill that saves your limits</h2>
+  <p>When you plug a value into a limit and get $\frac{0}{0}$, the fix is almost always factoring and canceling. Keep these sharp: difference of squares $a^2 - b^2 = (a-b)(a+b)$; the quadratic factor patterns; and the quadratic formula $x = \dfrac{-b \pm \sqrt{b^2 - 4ac}}{2a}$. For example, $\dfrac{x^2 - 9}{x - 3} = \dfrac{(x-3)(x+3)}{x-3} = x + 3$ once you cancel. That single technique resolves a huge fraction of Calc 1 limit problems.</p>
+
+  <div class="callout">
+    <p style="margin:0"><b>Bottom line.</b> If you can find domains, recognize the function families, compose and decompose functions, handle the unit circle in radians, and factor fluently, you have removed the biggest obstacles to Calc 1 before calculus even begins.</p>
+  </div>
+
+  <!-- ===================== PRACTICE ===================== -->
+  <div class="section-tag"><b>Practice</b> · 20 problems · tap to reveal each solution</div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">1</div><div class="q-body">
+      <p>Given $f(x) = x^2 - 3x + 1$, evaluate $f(-2)$ and $f(x+1)$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$f(-2) = (-2)^2 - 3(-2) + 1 = 4 + 6 + 1 = 11$.</p>
+      <p>$f(x+1) = (x+1)^2 - 3(x+1) + 1 = x^2 + 2x + 1 - 3x - 3 + 1 = x^2 - x - 1$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">2</div><div class="q-body">
+      <p>Find the domain of $f(x) = \dfrac{x+5}{x^2 - 9}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Denominator $x^2 - 9 = (x-3)(x+3)$ is zero at $x = 3, -3$.</p>
+      <p><strong>Domain:</strong> all reals except $x = \pm 3$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">3</div><div class="q-body">
+      <p>Find the domain of $g(x) = \sqrt{7 - 2x}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Need $7 - 2x \ge 0 \Rightarrow x \le \tfrac{7}{2}$.</p>
+      <p><strong>Domain:</strong> $\left(-\infty, \tfrac{7}{2}\right]$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">4</div><div class="q-body">
+      <p>Find the domain of $h(x) = \ln(x^2 - 4)$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Need $x^2 - 4 > 0 \Rightarrow (x-2)(x+2) > 0 \Rightarrow x < -2$ or $x > 2$.</p>
+      <p><strong>Domain:</strong> $(-\infty, -2) \cup (2, \infty)$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">5</div><div class="q-body">
+      <p>For $f(x) = \sqrt{x}$ and $g(x) = 3x - 2$, find $(f \circ g)(x)$ and $(g \circ f)(x)$, and state the domain of each.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$(f\circ g)(x) = \sqrt{3x - 2}$, domain $x \ge \tfrac{2}{3}$.</p>
+      <p>$(g\circ f)(x) = 3\sqrt{x} - 2$, domain $x \ge 0$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">6</div><div class="q-body">
+      <p>Describe the transformations that turn $y = x^2$ into $y = -(x+3)^2 - 1$, then state the vertex.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Shift left 3, reflect over the $x$-axis, shift down 1.</p>
+      <p><strong>Vertex:</strong> $(-3, -1)$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">7</div><div class="q-body">
+      <p>Simplify to a single power of $x$: $\dfrac{x^3 \cdot \sqrt{x}}{x^{-2}}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$\dfrac{x^3 \cdot x^{1/2}}{x^{-2}} = x^{3 + 1/2 - (-2)} = x^{11/2}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">8</div><div class="q-body">
+      <p>Rewrite $\dfrac{2}{\sqrt[3]{x^2}}$ using a negative fractional exponent.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$\dfrac{2}{\sqrt[3]{x^2}} = \dfrac{2}{x^{2/3}} = 2x^{-2/3}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">9</div><div class="q-body">
+      <p>Evaluate without a calculator: $\cos\dfrac{\pi}{3}$, $\sin\dfrac{\pi}{4}$, and $\tan\dfrac{\pi}{6}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$\cos\dfrac{\pi}{3} = \dfrac{1}{2}$; $\ \sin\dfrac{\pi}{4} = \dfrac{\sqrt2}{2}$;</p>
+      <p>$\tan\dfrac{\pi}{6} = \dfrac{\sin(\pi/6)}{\cos(\pi/6)} = \dfrac{1/2}{\sqrt3/2} = \dfrac{1}{\sqrt3} = \dfrac{\sqrt3}{3}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">10</div><div class="q-body">
+      <p>Use a logarithm rule to expand $\ln\dfrac{x^3 y}{z^2}$ into separate terms.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$\ln\dfrac{x^3 y}{z^2} = 3\ln x + \ln y - 2\ln z$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">11</div><div class="q-body">
+      <p>Factor and simplify: $\dfrac{x^2 - 25}{x^2 - 3x - 10}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$\dfrac{(x-5)(x+5)}{(x-5)(x+2)} = \dfrac{x+5}{x+2}$ (for $x \ne 5$).</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">12</div><div class="q-body">
+      <p>Solve for $x$: $2^{x+1} = 16$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$16 = 2^4$, so $x + 1 = 4 \Rightarrow x = 3$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">13</div><div class="q-body">
+      <p>For $f(x) = x^2$, simplify the difference quotient $\dfrac{f(x+h) - f(x)}{h}$. <span style="color:var(--ink-faint)">(This is the exact setup behind the derivative.)</span></p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$f(x+h) = (x+h)^2 = x^2 + 2xh + h^2$, so the numerator is $2xh + h^2$.</p>
+      <p>$\dfrac{2xh + h^2}{h} = 2x + h$ (for $h \ne 0$).</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">14</div><div class="q-body">
+      <p>Find the domain of $f(x) = \dfrac{\sqrt{x+2}}{x-1}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>The root needs $x + 2 \ge 0 \Rightarrow x \ge -2$; the denominator needs $x \ne 1$.</p>
+      <p><strong>Domain:</strong> $[-2, 1) \cup (1, \infty)$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">15</div><div class="q-body">
+      <p>Express $h(x) = (2x + 5)^4$ as a composition $f(g(x))$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Let $g(x) = 2x + 5$ (the inside) and $f(u) = u^4$ (the outside).</p>
+      <p>Then $f(g(x)) = (2x + 5)^4$. Spotting this inside/outside split is exactly what the chain rule needs.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">16</div><div class="q-body">
+      <p>Solve for $x$: $\ln x + \ln(x - 3) = \ln 4$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Combine: $\ln[x(x-3)] = \ln 4 \Rightarrow x^2 - 3x = 4 \Rightarrow x^2 - 3x - 4 = 0$.</p>
+      <p>Factor: $(x-4)(x+1) = 0 \Rightarrow x = 4$ or $x = -1$.</p>
+      <p>Reject $x = -1$ (the logs require $x > 3$). <strong>Answer:</strong> $x = 4$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">17</div><div class="q-body">
+      <p>Simplify $(8x^6)^{2/3}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$8^{2/3} = (2^3)^{2/3} = 2^2 = 4$, and $(x^6)^{2/3} = x^4$.</p>
+      <p><strong>Answer:</strong> $4x^4$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">18</div><div class="q-body">
+      <p>Find all $x$ in $[0, 2\pi)$ with $\sin x = \dfrac{1}{2}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Sine is positive in quadrants I and II, with reference angle $\dfrac{\pi}{6}$.</p>
+      <p><strong>Answer:</strong> $x = \dfrac{\pi}{6}, \ \dfrac{5\pi}{6}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">19</div><div class="q-body">
+      <p>Factor completely: $x^3 - 4x$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Pull out $x$: $x(x^2 - 4)$. Then difference of squares: $x^2 - 4 = (x-2)(x+2)$.</p>
+      <p><strong>Answer:</strong> $x(x-2)(x+2)$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">20</div><div class="q-body">
+      <p>Simplify $\dfrac{\sqrt{x} - 2}{x - 4}$. <span style="color:var(--ink-faint)">(A conjugate/factoring move you'll reuse constantly in limits.)</span></p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Recognize $x - 4 = (\sqrt{x} - 2)(\sqrt{x} + 2)$.</p>
+      <p>$\dfrac{\sqrt{x} - 2}{(\sqrt{x} - 2)(\sqrt{x} + 2)} = \dfrac{1}{\sqrt{x} + 2}$ (for $x \ne 4$).</p>
+    </div></details>
+  </div>
+
+  <a class="next" href="#" onclick="return false;">
+    <div>
+      <div class="lbl">Next module</div>
+      <div class="name">02 · Limits</div>
+    </div>
+    <div class="arrow">→</div>
+  </a>
+
+</main>
+
+<script>
+  window.addEventListener("DOMContentLoaded", function(){
+    function render(){
+      if (window.renderMathInElement){
+        renderMathInElement(document.body, {
+          delimiters:[
+            {left:"$$", right:"$$", display:true},
+            {left:"$",  right:"$",  display:false},
+            {left:"\\[", right:"\\]", display:true},
+            {left:"\\(", right:"\\)", display:false}
+          ],
+          throwOnError:false
+        });
+      } else {
+        setTimeout(render, 60);
+      }
+    }
+    render();
+  });
+</script>
+</body>
+</html>

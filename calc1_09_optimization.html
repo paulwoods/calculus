@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calc 1 · 09 — Optimization</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+
+<style>
+  :root{
+    --bg:        #0a0e17;
+    --bg-grid:   rgba(120,140,180,0.055);
+    --surface:   #111725;
+    --surface-2: #161d2e;
+    --border:    rgba(150,170,210,0.12);
+    --border-strong: rgba(150,170,210,0.22);
+
+    --ink:       #e8eef7;
+    --ink-soft:  #aab4c5;
+    --ink-faint: #6f7b90;
+
+    --poly:  #38bdf8;
+    --rat:   #c084fc;
+    --exp:   #fbbf24;
+    --log:   #fb7185;
+    --trig:  #34d399;
+
+    --maxw: 780px;
+    --radius: 14px;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0 / 32px 32px,
+      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0 / 32px 32px,
+      radial-gradient(1200px 600px at 70% -10%, rgba(251,191,36,0.11), transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, sans-serif;
+    font-size:17px;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .katex{ font-size:1.04em; }
+  .katex-display{ margin:1.3em 0; padding:.4em .2em; overflow-x:auto; overflow-y:hidden; }
+
+  .rail{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; gap:.6rem;
+    padding:.7rem clamp(1rem,4vw,2rem);
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.74rem; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink-faint);
+    background:rgba(10,14,23,0.78);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .rail b{ color:var(--ink-soft); font-weight:500; }
+  .rail .dot{ width:7px;height:7px;border-radius:50%;background:var(--exp);box-shadow:0 0 10px var(--exp); }
+
+  main{ max-width:var(--maxw); margin:0 auto; padding:0 clamp(1rem,4vw,2rem) 5rem; }
+
+  .hero{ padding:3.2rem 0 1.5rem; }
+  .eyebrow{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.8rem; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--exp);
+    display:flex; align-items:center; gap:.75rem;
+  }
+  .eyebrow .num{
+    font-family:"Space Grotesk", sans-serif;
+    font-size:.95rem; font-weight:700;
+    color:var(--bg); background:var(--exp);
+    padding:.05rem .5rem; border-radius:6px; letter-spacing:.05em;
+  }
+  h1{
+    font-family:"Space Grotesk", sans-serif;
+    font-weight:700; font-size:clamp(2.1rem,6vw,3.3rem);
+    line-height:1.05; letter-spacing:-0.02em;
+    margin:1rem 0 .8rem;
+    background:linear-gradient(100deg,var(--exp),var(--log) 55%,var(--trig));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .lede{
+    color:var(--ink-soft); font-size:1.08rem; max-width:60ch;
+    border-left:2px solid var(--border-strong); padding-left:1rem;
+  }
+
+  figure.plot{
+    margin:2rem 0 0; padding:1rem;
+    background:linear-gradient(180deg,var(--surface),var(--bg));
+    border:1px solid var(--border); border-radius:var(--radius);
+  }
+  figure.plot svg{ width:100%; height:auto; display:block; }
+  .legend{
+    display:flex; flex-wrap:wrap; gap:1.1rem;
+    margin-top:.6rem; padding:0 .3rem;
+    font-family:"IBM Plex Mono", monospace; font-size:.82rem; color:var(--ink-soft);
+  }
+  .legend span{ display:inline-flex; align-items:center; gap:.45rem; }
+  .legend i{ width:22px; height:3px; border-radius:2px; display:inline-block; }
+
+  .curve{ fill:none; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round;
+    filter:drop-shadow(0 0 6px currentColor); }
+  .axis{ stroke:rgba(160,175,205,0.35); stroke-width:1.2; }
+  .tick{ stroke:rgba(160,175,205,0.18); stroke-width:1; }
+
+  @media (prefers-reduced-motion:no-preference){
+    .curve{ stroke-dasharray:1400; stroke-dashoffset:1400; animation:draw 1.6s ease forwards; }
+    .curve.c2{ animation-delay:.35s; }
+    .curve.c3{ animation-delay:.7s; }
+    @keyframes draw{ to{ stroke-dashoffset:0; } }
+  }
+
+  .section-tag{
+    display:flex; align-items:center; gap:.8rem;
+    margin:3.5rem 0 1.2rem;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.78rem; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-faint);
+  }
+  .section-tag::after{ content:""; flex:1; height:1px; background:var(--border); }
+  .section-tag b{ color:var(--ink); font-weight:600; }
+
+  h2{
+    font-family:"Space Grotesk", sans-serif;
+    font-weight:600; font-size:1.02rem; letter-spacing:.02em;
+    margin:2.4rem 0 .6rem; padding-left:.9rem;
+    border-left:3px solid var(--accent, var(--poly));
+    color:var(--ink);
+  }
+  h2 .k{ color:var(--accent, var(--poly)); font-family:"IBM Plex Mono",monospace; font-size:.8rem; margin-right:.4rem; }
+
+  p{ margin:.7rem 0; color:var(--ink); }
+  strong{ color:#fff; font-weight:600; }
+
+  ul.clean{ list-style:none; padding:0; margin:1rem 0; display:grid; gap:.55rem; }
+  ul.clean li{
+    padding:.7rem .9rem; background:var(--surface); border:1px solid var(--border);
+    border-radius:10px; border-left:3px solid var(--fam,var(--poly));
+  }
+  ul.clean li .fam{ font-weight:600; color:var(--fam,var(--poly)); }
+
+  ol.rules{ padding-left:1.2rem; margin:1rem 0; }
+  ol.rules li{ margin:.4rem 0; }
+
+  .callout{
+    margin:2rem 0; padding:1.1rem 1.3rem;
+    background:linear-gradient(120deg, rgba(52,211,153,0.10), rgba(56,189,248,0.06));
+    border:1px solid var(--border-strong); border-radius:var(--radius);
+  }
+  .callout b{ color:var(--trig); }
+
+  .q{
+    margin:1rem 0; background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); overflow:hidden;
+    transition:border-color .2s ease;
+  }
+  .q:hover{ border-color:var(--border-strong); }
+  .q-head{ display:flex; gap:.9rem; padding:1.1rem 1.2rem; }
+  .q-num{
+    flex:none; width:2rem; height:2rem; border-radius:8px;
+    display:grid; place-items:center;
+    font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:.9rem;
+    color:var(--bg); background:var(--qc,var(--poly));
+    box-shadow:0 0 14px -2px var(--qc,var(--poly));
+  }
+  .q-body{ flex:1; }
+  .q-body p{ margin:.2rem 0; }
+
+  details{ border-top:1px solid var(--border); }
+  summary{
+    list-style:none; cursor:pointer; user-select:none;
+    padding:.7rem 1.2rem .7rem 3.1rem;
+    font-family:"IBM Plex Mono",monospace; font-size:.78rem;
+    letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint);
+    display:flex; align-items:center; gap:.5rem;
+    transition:color .15s ease, background .15s ease;
+  }
+  summary::-webkit-details-marker{ display:none; }
+  summary::before{
+    content:"▸"; color:var(--qc,var(--poly)); font-size:.9rem;
+    transition:transform .2s ease;
+  }
+  details[open] summary::before{ transform:rotate(90deg); }
+  summary:hover{ color:var(--ink-soft); background:rgba(255,255,255,0.02); }
+  .solution{ padding:.2rem 1.2rem 1.2rem 3.1rem; color:var(--ink-soft); }
+  .solution p{ margin:.5rem 0; }
+
+  .next{
+    margin-top:3.5rem; padding:1.4rem 1.5rem;
+    display:flex; align-items:center; justify-content:space-between; gap:1rem;
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  }
+  .next .lbl{ font-family:"IBM Plex Mono",monospace; font-size:.72rem; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--ink-faint); }
+  .next .name{ font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:1.15rem; color:var(--trig); }
+  .next .arrow{ color:var(--trig); font-size:1.4rem; }
+
+  a:focus-visible, summary:focus-visible{ outline:2px solid var(--exp); outline-offset:3px; border-radius:4px; }
+
+  @media (max-width:520px){
+    body{ font-size:16px; }
+    .q-head{ padding:.9rem; }
+    .solution{ padding-left:1.2rem; }
+    summary{ padding-left:1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="rail">
+  <span class="dot"></span>
+  <b>Calculus&nbsp;1</b> · Module 09 / 10 · Optimization
+</div>
+
+<main>
+
+  <header class="hero">
+    <div class="eyebrow"><span class="num">09</span> Applied Module</div>
+    <h1>Optimization</h1>
+    <p class="lede">The best rectangle, the cheapest can, the shortest path — turning word problems into single-variable max/min hunts.</p>
+
+    <figure class="plot">
+      <svg viewBox="0 0 600 340" role="img" aria-label="A downward parabola showing area versus width for a fixed-perimeter fence, with the peak marked as the optimum.">
+        <g class="tick">
+          <line x1="60" y1="40" x2="60" y2="300"/><line x1="140" y1="40" x2="140" y2="300"/>
+          <line x1="220" y1="40" x2="220" y2="300"/><line x1="380" y1="40" x2="380" y2="300"/>
+          <line x1="460" y1="40" x2="460" y2="300"/><line x1="540" y1="40" x2="540" y2="300"/>
+          <line x1="60" y1="60" x2="540" y2="60"/><line x1="60" y1="170" x2="540" y2="170"/>
+          <line x1="60" y1="280" x2="540" y2="280"/>
+        </g>
+        <g class="axis">
+          <line x1="60" y1="300" x2="560" y2="300"/>
+          <line x1="80" y1="30" x2="80" y2="315"/>
+        </g>
+        <path class="curve c1" style="color:var(--exp);stroke:var(--exp)"
+          d="M 90 298 Q 300 -160 510 298"/>
+        <circle cx="300" cy="70" r="7" fill="var(--exp)" style="filter:drop-shadow(0 0 8px var(--exp))"/>
+        <line x1="300" y1="70" x2="300" y2="300" stroke="var(--trig)" stroke-width="1.4" stroke-dasharray="5 5" opacity=".9"/>
+        <line x1="200" y1="86" x2="400" y2="86" stroke="var(--ink-faint)" stroke-width="1.6" stroke-dasharray="6 4"/>
+        <text x="312" y="64" fill="var(--exp)" font-family="IBM Plex Mono" font-size="15">A′(x) = 0</text>
+        <text x="284" y="322" fill="var(--trig)" font-family="IBM Plex Mono" font-size="15">x*</text>
+        <text x="100" y="90" fill="var(--ink-faint)" font-family="IBM Plex Mono" font-size="13">A(x): area vs width</text>
+      </svg>
+      <div class="legend"><span><i style="background:var(--exp)"></i> objective function A(x) — the peak is the answer, found where A′ = 0</span></div>
+    </figure>
+  </header>
+
+  <div class="section-tag"><b>Tutorial</b> · ~1000 words</div>
+
+  <h2 style="--accent:var(--exp)"><span class="k">01</span>What an optimization problem is</h2>
+  <p>Every optimization problem has the same anatomy: an <strong>objective</strong> — the quantity to maximize or minimize (area, volume, cost, distance, time) — and usually a <strong>constraint</strong> — a fixed resource linking the variables (so much fence, so much material, a point that must lie on a curve). The calculus part is Module 08: find critical points, confirm max or min. The <em>hard</em> part is translation — converting a paragraph of English into a function of one variable. That translation is a repeatable skill, not a talent, and the procedure below makes it mechanical.</p>
+
+  <h2 style="--accent:var(--log)"><span class="k">02</span>The six-step procedure</h2>
+  <ol class="rules">
+    <li><strong>Draw a picture</strong> and label every quantity with a symbol.</li>
+    <li><strong>Write the objective</strong> — the formula for what's being optimized.</li>
+    <li><strong>Write the constraint</strong> — the equation from the fixed resource.</li>
+    <li><strong>Substitute</strong> the constraint into the objective to get a function of <em>one</em> variable.</li>
+    <li><strong>Find the domain</strong> — what values are physically possible? (Lengths $\ge 0$, etc.)</li>
+    <li><strong>Optimize:</strong> critical points, then verify max vs. min, then answer the question that was actually asked.</li>
+  </ol>
+  <p>Step 5 is the one everyone skips and shouldn't: the domain decides whether you use the closed interval method (compare endpoints) or a derivative test, and endpoints sometimes <em>win</em>.</p>
+
+  <h2 style="--accent:var(--trig)"><span class="k">03</span>Worked example: the fence</h2>
+  <p><em>You have 400 ft of fence for a rectangular pen against a river — no fence needed on the river side. Maximize the area.</em></p>
+  <p>Picture: width $x$ (two sides), length $y$ (one side). <strong>Objective:</strong> $A = xy$. <strong>Constraint:</strong> $2x + y = 400$, so $y = 400 - 2x$. <strong>Substitute:</strong></p>
+  <p>$$A(x) = x(400 - 2x) = 400x - 2x^2, \qquad 0 \le x \le 200$$</p>
+  <p><strong>Optimize:</strong> $A'(x) = 400 - 4x = 0 \Rightarrow x = 100$. Then $A'' = -4 < 0$: a maximum. Dimensions $100 \times 200$ ft, area $20{,}000$ ft². (Endpoints give $A = 0$ — sanity confirmed.) Note the answer is <em>not</em> a square: the free river side breaks the symmetry, which is why you compute instead of guessing.</p>
+
+  <h2 style="--accent:var(--poly)"><span class="k">04</span>Worked example: the open box</h2>
+  <p><em>Cut equal squares of side $x$ from the corners of a 12&nbsp;in × 12&nbsp;in sheet and fold up the sides. Maximize the volume.</em></p>
+  <p>Folding gives a base of $(12 - 2x) \times (12 - 2x)$ and height $x$:</p>
+  <p>$$V(x) = x(12 - 2x)^2, \qquad 0 \le x \le 6$$</p>
+  <p>$V'(x) = (12-2x)^2 + x\cdot 2(12-2x)(-2) = (12 - 2x)(12 - 6x)$, zero at $x = 6$ (endpoint, $V = 0$) and $x = 2$. So $x = 2$ in gives the max: $V = 2 \cdot 8^2 = 128$ in³. The product-plus-chain differentiation and the factored form are typical — factoring $V'$ beats expanding it.</p>
+
+  <h2 style="--accent:var(--rat)"><span class="k">05</span>Verifying max vs. min</h2>
+  <p>A critical point is a suspect, not a conviction. Three ways to close the case: <strong>(1) Second derivative test</strong> — fastest when $f''$ is simple ($A'' = -4 < 0$ above). <strong>(2) First-derivative sign chart</strong> — always works. <strong>(3) Closed interval comparison</strong> — when the domain is closed, just evaluate at the critical points and endpoints; no test needed. And one honest shortcut: if the domain is an open interval, the function is positive inside, zero (or $\to 0$/$\to\infty$ appropriately) at the ends, and there's exactly one critical point — that point must be the extremum. State the reasoning; don't just assert it.</p>
+
+  <h2 style="--accent:var(--exp)"><span class="k">06</span>Minimizing distance</h2>
+  <p><em>Find the point on $y = x^2$ closest to $(0, 3)$.</em> The distance from $(x, x^2)$ to $(0,3)$ is $\sqrt{x^2 + (x^2-3)^2}$ — but square roots are miserable to differentiate, so use the standard trick: <strong>minimize the squared distance</strong>, which has the same minimizer:</p>
+  <p>$$D(x) = x^2 + (x^2 - 3)^2 \qquad D'(x) = 2x + 2(x^2-3)(2x) = 2x(2x^2 - 5)$$</p>
+  <p>Critical points $x = 0$ and $x = \pm\sqrt{5/2}$. Compare: $D(0) = 9$, $D\left(\pm\sqrt{5/2}\right) = \tfrac{5}{2} + \tfrac14 = \tfrac{11}{4}$. Closest points: $\left(\pm\sqrt{5/2},\, 5/2\right)$. The symmetric pair of answers reflects the symmetric setup — a useful sanity check.</p>
+
+  <h2 style="--accent:var(--log)"><span class="k">07</span>Cost, revenue, and the economics pattern</h2>
+  <p>Business problems dress the same math in dollars. A cylindrical can must hold $500$ cm³; material for the top and bottom costs twice the side material. The constraint $\pi r^2 h = 500$ eliminates $h$ from the cost objective $C = 2\cdot 2\pi r^2 k + 2\pi r h k$, leaving $C(r)$ to minimize. In pure revenue problems, if raising a price $p$ loses customers linearly, revenue $R = p \cdot (\text{quantity}(p))$ becomes a downward parabola — maximize as usual. The pattern never changes: constraint kills a variable, derivative finds the balance point where the competing pressures (bigger base vs. taller side, higher price vs. fewer buyers) exactly cancel.</p>
+
+  <h2 style="--accent:var(--trig)"><span class="k">08</span>Pitfalls and pro habits</h2>
+  <p>The four ways good students lose points: <strong>(1) Answering the wrong question</strong> — the problem asks for the maximum <em>area</em> and you report the optimal <em>width</em>, or vice versa; reread the final sentence. <strong>(2) Skipping the domain</strong> — and missing that an endpoint wins or that a negative critical point is meaningless. <strong>(3) No max/min justification</strong> — a bare "$f'(x) = 0$ at $x=2$" earns partial credit at best. <strong>(4) Differentiating before eliminating</strong> — the objective must be a one-variable function first; that's what the constraint is for. Build the habit of ending every solution with a sentence: "so the maximum area is 20,000 ft², achieved at 100 ft × 200 ft."</p>
+
+  <div class="callout">
+    <p style="margin:0"><b>The whole module in one line.</b> Picture → objective → constraint → substitute to one variable → domain → critical points → justify max/min → answer the actual question, with units. Six problems from now this will feel like one move, not eight.</p>
+  </div>
+
+  <div class="section-tag"><b>Practice</b> · 20 problems · tap to reveal each solution</div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">1</div><div class="q-body">
+      <p>Two positive numbers sum to 50. Maximize their product.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$P = x(50 - x) = 50x - x^2$; $P' = 50 - 2x = 0 \Rightarrow x = 25$.</p>
+      <p>$P'' = -2 < 0$: max. Numbers $25$ and $25$; product $625$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">2</div><div class="q-body">
+      <p>Find two positive numbers whose product is 100 and whose sum is minimal.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$S = x + \dfrac{100}{x}$; $S' = 1 - \dfrac{100}{x^2} = 0 \Rightarrow x = 10$.</p>
+      <p>$S'' = \dfrac{200}{x^3} > 0$: min. Numbers $10$ and $10$; sum $20$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">3</div><div class="q-body">
+      <p>A rectangle has perimeter 36. Maximize its area.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$y = 18 - x$; $A = x(18-x)$; $A' = 18 - 2x = 0 \Rightarrow x = 9$.</p>
+      <p>A $9 \times 9$ square, area $81$. (With the full perimeter fenced, the square <em>does</em> win.)</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">4</div><div class="q-body">
+      <p>400 ft of fencing encloses a rectangular pen against a river (no fence on the river side). Maximize the area.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$A(x) = x(400 - 2x)$; $A' = 400 - 4x = 0 \Rightarrow x = 100$, $y = 200$.</p>
+      <p>$A'' < 0$: max. Area $= 20{,}000$ ft².</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">5</div><div class="q-body">
+      <p>A farmer subdivides a rectangular field of total area with 600 m of fence, including one divider parallel to a side. Maximize the enclosed area.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Fence: $2y + 3x = 600 \Rightarrow y = 300 - \tfrac{3}{2}x$. $A = xy = 300x - \tfrac{3}{2}x^2$.</p>
+      <p>$A' = 300 - 3x = 0 \Rightarrow x = 100$, $y = 150$. Max area $15{,}000$ m².</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">6</div><div class="q-body">
+      <p>Cut squares of side $x$ from the corners of a 12 in × 12 in sheet and fold into an open box. Maximize the volume.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$V = x(12-2x)^2$; $V' = (12-2x)(12-6x) = 0 \Rightarrow x = 2$ (interior).</p>
+      <p>Max $V = 2(8)^2 = 128$ in³.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">7</div><div class="q-body">
+      <p>An open-top box has a square base and volume 32 ft³. Minimize the material (surface area).</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$h = \dfrac{32}{x^2}$; $S = x^2 + 4xh = x^2 + \dfrac{128}{x}$.</p>
+      <p>$S' = 2x - \dfrac{128}{x^2} = 0 \Rightarrow x^3 = 64 \Rightarrow x = 4$, $h = 2$. Min $S = 48$ ft².</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">8</div><div class="q-body">
+      <p>Find the point on the line $y = 2x + 3$ closest to the origin.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$D = x^2 + (2x+3)^2$; $D' = 2x + 4(2x+3) = 10x + 12 = 0 \Rightarrow x = -\dfrac{6}{5}$.</p>
+      <p>Point: $\left(-\dfrac{6}{5}, \dfrac{3}{5}\right)$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">9</div><div class="q-body">
+      <p>Find the point(s) on $y = x^2$ closest to $(0, 3)$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$D = x^2 + (x^2 - 3)^2$; $D' = 2x(2x^2 - 5) = 0 \Rightarrow x = 0, \pm\sqrt{5/2}$.</p>
+      <p>$D(0) = 9 > D(\pm\sqrt{5/2}) = \tfrac{11}{4}$: closest points $\left(\pm\sqrt{\tfrac{5}{2}}, \tfrac{5}{2}\right)$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">10</div><div class="q-body">
+      <p>Maximize the area of a rectangle inscribed under $y = 12 - x^2$ with its base on the $x$-axis (symmetric about the $y$-axis).</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$A = 2x(12 - x^2) = 24x - 2x^3$; $A' = 24 - 6x^2 = 0 \Rightarrow x = 2$.</p>
+      <p>Max area $= 2(2)(8) = 32$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">11</div><div class="q-body">
+      <p>A rectangle is inscribed in a semicircle of radius 5 with its base on the diameter. Maximize its area.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$A = 2x\sqrt{25 - x^2}$; maximize $A^2 = 4x^2(25 - x^2)$: derivative $8x(25) - 16x^3 = 0 \Rightarrow x = \dfrac{5}{\sqrt2}$.</p>
+      <p>Max area $= 2\cdot\dfrac{5}{\sqrt2}\cdot\dfrac{5}{\sqrt2} = 25$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">12</div><div class="q-body">
+      <p>A closed cylindrical can must hold $250\pi$ cm³. Minimize its surface area.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$h = \dfrac{250}{r^2}$; $S = 2\pi r^2 + 2\pi r h = 2\pi r^2 + \dfrac{500\pi}{r}$.</p>
+      <p>$S' = 4\pi r - \dfrac{500\pi}{r^2} = 0 \Rightarrow r^3 = 125 \Rightarrow r = 5$, $h = 10$. (Optimal can: $h = 2r$.)</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">13</div><div class="q-body">
+      <p>A ticket price of \$10 draws 800 fans; each \$1 increase loses 50 fans. What price maximizes revenue?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>With $x$ dollar-increases: $R = (10 + x)(800 - 50x)$.</p>
+      <p>$R' = 800 - 50x - 500 - 100x\cdot\tfrac12$… expand instead: $R = 8000 + 300x - 50x^2$, $R' = 300 - 100x = 0 \Rightarrow x = 3$.</p>
+      <p>Price $\$13$, attendance $650$, revenue $\$8450$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">14</div><div class="q-body">
+      <p>Cost to produce $x$ units is $C(x) = 2000 + 10x + 0.05x^2$. Find the production level minimizing average cost $\dfrac{C(x)}{x}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$\bar C = \dfrac{2000}{x} + 10 + 0.05x$; $\bar C' = -\dfrac{2000}{x^2} + 0.05 = 0 \Rightarrow x^2 = 40000 \Rightarrow x = 200$ units.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">15</div><div class="q-body">
+      <p>A wire 20 cm long is cut and bent into a square and a circle. How should it be cut to minimize the total area? Should it be cut at all to <em>maximize</em> it?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Square gets $x$: area $\left(\tfrac{x}{4}\right)^2$; circle gets $20 - x$: area $\dfrac{(20-x)^2}{4\pi}$.</p>
+      <p>$A'(x) = \dfrac{x}{8} - \dfrac{20 - x}{2\pi} = 0 \Rightarrow x = \dfrac{80}{4 + \pi} \approx 11.2$ cm to the square (min).</p>
+      <p>Max is at an endpoint: give <strong>everything to the circle</strong> ($x = 0$) — circles enclose area most efficiently.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">16</div><div class="q-body">
+      <p>Find the dimensions of the largest rectangle with base on the $x$-axis inscribed in the triangle with vertices $(0,0)$, $(8,0)$, $(0,6)$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Hypotenuse: $y = 6 - \tfrac{3}{4}x$. Rectangle with corner at $(x, y)$: $A = x\left(6 - \tfrac34 x\right)$.</p>
+      <p>$A' = 6 - \tfrac{3}{2}x = 0 \Rightarrow x = 4$, $y = 3$. Max area $12$ — exactly half the triangle.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">17</div><div class="q-body">
+      <p>A rectangular poster needs 96 in² of printed area, with 2-in margins top and bottom and 1-in margins on each side. Minimize the total paper area.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Printed area $x \times y = 96$. Paper: $(x + 2)(y + 4) = (x+2)\left(\tfrac{96}{x} + 4\right)$.</p>
+      <p>$A = 104 + 4x + \dfrac{192}{x}$; $A' = 4 - \dfrac{192}{x^2} = 0 \Rightarrow x = \sqrt{48} = 4\sqrt3$.</p>
+      <p>Paper dimensions: $(4\sqrt3 + 2) \times (8\sqrt3 + 4)$ in.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">18</div><div class="q-body">
+      <p>What positive number exceeds its square by the greatest amount?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Maximize $f(x) = x - x^2$: $f' = 1 - 2x = 0 \Rightarrow x = \dfrac{1}{2}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">19</div><div class="q-body">
+      <p>Trick check: minimize $f(x) = x^2$ on $[1, 3]$. Where's the answer, and why isn't it a critical point?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$f' = 2x$ is never zero on $(1,3)$. Compare endpoints: $f(1) = 1 < f(3) = 9$.</p>
+      <p><strong>Min at the endpoint $x = 1$</strong> — endpoint extrema need no horizontal tangent. This is why step 5 (domain) exists.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">20</div><div class="q-body">
+      <p>Challenge: a swimmer 2 km offshore wants to reach a point 6 km down the straight beach. She swims 4 km/h and runs 10 km/h. Where should she land to minimize total time?</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Land $x$ km down the beach: $T(x) = \dfrac{\sqrt{4 + x^2}}{4} + \dfrac{6 - x}{10}$.</p>
+      <p>$T' = \dfrac{x}{4\sqrt{4+x^2}} - \dfrac{1}{10} = 0 \Rightarrow 10x = 4\sqrt{4+x^2} \Rightarrow 100x^2 = 16(4 + x^2) \Rightarrow x = \dfrac{8}{\sqrt{84}} \approx 0.87$ km.</p>
+      <p>Land about $0.87$ km down the beach, then run. (Snell's law of refraction is this exact problem.)</p>
+    </div></details>
+  </div>
+
+  <a class="next" href="#" onclick="return false;">
+    <div>
+      <div class="lbl">Next module</div>
+      <div class="name">10 · Antiderivatives & the Definite Integral</div>
+    </div>
+    <div class="arrow">→</div>
+  </a>
+
+</main>
+
+<script>
+  window.addEventListener("DOMContentLoaded", function(){
+    function render(){
+      if (window.renderMathInElement){
+        renderMathInElement(document.body, {
+          delimiters:[
+            {left:"$$", right:"$$", display:true},
+            {left:"$",  right:"$",  display:false},
+            {left:"\\[", right:"\\]", display:true},
+            {left:"\\(", right:"\\)", display:false}
+          ],
+          throwOnError:false
+        });
+      } else {
+        setTimeout(render, 60);
+      }
+    }
+    render();
+  });
+</script>
+</body>
+</html>

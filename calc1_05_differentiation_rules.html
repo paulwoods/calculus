@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calc 1 · 05 — Differentiation Rules</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+
+<style>
+  :root{
+    --bg:        #0a0e17;
+    --bg-grid:   rgba(120,140,180,0.055);
+    --surface:   #111725;
+    --surface-2: #161d2e;
+    --border:    rgba(150,170,210,0.12);
+    --border-strong: rgba(150,170,210,0.22);
+
+    --ink:       #e8eef7;
+    --ink-soft:  #aab4c5;
+    --ink-faint: #6f7b90;
+
+    --poly:  #38bdf8;
+    --rat:   #c084fc;
+    --exp:   #fbbf24;
+    --log:   #fb7185;
+    --trig:  #34d399;
+
+    --maxw: 780px;
+    --radius: 14px;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0 / 32px 32px,
+      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0 / 32px 32px,
+      radial-gradient(1200px 600px at 70% -10%, rgba(251,191,36,0.10), transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, sans-serif;
+    font-size:17px;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .katex{ font-size:1.04em; }
+  .katex-display{ margin:1.3em 0; padding:.4em .2em; overflow-x:auto; overflow-y:hidden; }
+
+  .rail{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; gap:.6rem;
+    padding:.7rem clamp(1rem,4vw,2rem);
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.74rem; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink-faint);
+    background:rgba(10,14,23,0.78);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .rail b{ color:var(--ink-soft); font-weight:500; }
+  .rail .dot{ width:7px;height:7px;border-radius:50%;background:var(--exp);box-shadow:0 0 10px var(--exp); }
+
+  main{ max-width:var(--maxw); margin:0 auto; padding:0 clamp(1rem,4vw,2rem) 5rem; }
+
+  .hero{ padding:3.2rem 0 1.5rem; }
+  .eyebrow{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.8rem; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--exp);
+    display:flex; align-items:center; gap:.75rem;
+  }
+  .eyebrow .num{
+    font-family:"Space Grotesk", sans-serif;
+    font-size:.95rem; font-weight:700;
+    color:var(--bg); background:var(--exp);
+    padding:.05rem .5rem; border-radius:6px; letter-spacing:.05em;
+  }
+  h1{
+    font-family:"Space Grotesk", sans-serif;
+    font-weight:700; font-size:clamp(2.1rem,6vw,3.3rem);
+    line-height:1.05; letter-spacing:-0.02em;
+    margin:1rem 0 .8rem;
+    background:linear-gradient(100deg,var(--exp),var(--trig) 55%,var(--poly));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .lede{
+    color:var(--ink-soft); font-size:1.08rem; max-width:60ch;
+    border-left:2px solid var(--border-strong); padding-left:1rem;
+  }
+
+  figure.plot{
+    margin:2rem 0 0; padding:1rem;
+    background:linear-gradient(180deg,var(--surface),var(--bg));
+    border:1px solid var(--border); border-radius:var(--radius);
+  }
+  figure.plot svg{ width:100%; height:auto; display:block; }
+  .legend{
+    display:flex; flex-wrap:wrap; gap:1.1rem;
+    margin-top:.6rem; padding:0 .3rem;
+    font-family:"IBM Plex Mono", monospace; font-size:.82rem; color:var(--ink-soft);
+  }
+  .legend span{ display:inline-flex; align-items:center; gap:.45rem; }
+  .legend i{ width:22px; height:3px; border-radius:2px; display:inline-block; }
+
+  .curve{ fill:none; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round;
+    filter:drop-shadow(0 0 6px currentColor); }
+  .axis{ stroke:rgba(160,175,205,0.35); stroke-width:1.2; }
+  .tick{ stroke:rgba(160,175,205,0.18); stroke-width:1; }
+
+  @media (prefers-reduced-motion:no-preference){
+    .curve{ stroke-dasharray:1400; stroke-dashoffset:1400; animation:draw 1.6s ease forwards; }
+    .curve.c2{ animation-delay:.35s; }
+    .curve.c3{ animation-delay:.7s; }
+    @keyframes draw{ to{ stroke-dashoffset:0; } }
+  }
+
+  .section-tag{
+    display:flex; align-items:center; gap:.8rem;
+    margin:3.5rem 0 1.2rem;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.78rem; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-faint);
+  }
+  .section-tag::after{ content:""; flex:1; height:1px; background:var(--border); }
+  .section-tag b{ color:var(--ink); font-weight:600; }
+
+  h2{
+    font-family:"Space Grotesk", sans-serif;
+    font-weight:600; font-size:1.02rem; letter-spacing:.02em;
+    margin:2.4rem 0 .6rem; padding-left:.9rem;
+    border-left:3px solid var(--accent, var(--poly));
+    color:var(--ink);
+  }
+  h2 .k{ color:var(--accent, var(--poly)); font-family:"IBM Plex Mono",monospace; font-size:.8rem; margin-right:.4rem; }
+
+  p{ margin:.7rem 0; color:var(--ink); }
+  strong{ color:#fff; font-weight:600; }
+
+  ul.clean{ list-style:none; padding:0; margin:1rem 0; display:grid; gap:.55rem; }
+  ul.clean li{
+    padding:.7rem .9rem; background:var(--surface); border:1px solid var(--border);
+    border-radius:10px; border-left:3px solid var(--fam,var(--poly));
+  }
+  ul.clean li .fam{ font-weight:600; color:var(--fam,var(--poly)); }
+
+  ol.rules{ padding-left:1.2rem; margin:1rem 0; }
+  ol.rules li{ margin:.4rem 0; }
+
+  .callout{
+    margin:2rem 0; padding:1.1rem 1.3rem;
+    background:linear-gradient(120deg, rgba(52,211,153,0.10), rgba(56,189,248,0.06));
+    border:1px solid var(--border-strong); border-radius:var(--radius);
+  }
+  .callout b{ color:var(--trig); }
+
+  .q{
+    margin:1rem 0; background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); overflow:hidden;
+    transition:border-color .2s ease;
+  }
+  .q:hover{ border-color:var(--border-strong); }
+  .q-head{ display:flex; gap:.9rem; padding:1.1rem 1.2rem; }
+  .q-num{
+    flex:none; width:2rem; height:2rem; border-radius:8px;
+    display:grid; place-items:center;
+    font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:.9rem;
+    color:var(--bg); background:var(--qc,var(--poly));
+    box-shadow:0 0 14px -2px var(--qc,var(--poly));
+  }
+  .q-body{ flex:1; }
+  .q-body p{ margin:.2rem 0; }
+
+  details{ border-top:1px solid var(--border); }
+  summary{
+    list-style:none; cursor:pointer; user-select:none;
+    padding:.7rem 1.2rem .7rem 3.1rem;
+    font-family:"IBM Plex Mono",monospace; font-size:.78rem;
+    letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint);
+    display:flex; align-items:center; gap:.5rem;
+    transition:color .15s ease, background .15s ease;
+  }
+  summary::-webkit-details-marker{ display:none; }
+  summary::before{
+    content:"▸"; color:var(--qc,var(--poly)); font-size:.9rem;
+    transition:transform .2s ease;
+  }
+  details[open] summary::before{ transform:rotate(90deg); }
+  summary:hover{ color:var(--ink-soft); background:rgba(255,255,255,0.02); }
+  .solution{ padding:.2rem 1.2rem 1.2rem 3.1rem; color:var(--ink-soft); }
+  .solution p{ margin:.5rem 0; }
+
+  .next{
+    margin-top:3.5rem; padding:1.4rem 1.5rem;
+    display:flex; align-items:center; justify-content:space-between; gap:1rem;
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  }
+  .next .lbl{ font-family:"IBM Plex Mono",monospace; font-size:.72rem; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--ink-faint); }
+  .next .name{ font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:1.15rem; color:var(--trig); }
+  .next .arrow{ color:var(--trig); font-size:1.4rem; }
+
+  a:focus-visible, summary:focus-visible{ outline:2px solid var(--exp); outline-offset:3px; border-radius:4px; }
+
+  @media (max-width:520px){
+    body{ font-size:16px; }
+    .q-head{ padding:.9rem; }
+    .solution{ padding-left:1.2rem; }
+    summary{ padding-left:1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="rail">
+  <span class="dot"></span>
+  <b>Calculus&nbsp;1</b> · Module 05 / 10 · Differentiation Rules
+</div>
+
+<main>
+
+  <header class="hero">
+    <div class="eyebrow"><span class="num">05</span> Mechanics Module</div>
+    <h1>Differentiation Rules</h1>
+    <p class="lede">Power, product, quotient, chain: the four rules that replace limit computations with algebra you can do on autopilot.</p>
+
+    <figure class="plot">
+      <svg viewBox="0 0 600 340" role="img" aria-label="A cubic curve and its derivative, a parabola, plotted together: where the cubic has flat spots the parabola crosses zero.">
+        <g class="tick">
+          <line x1="60" y1="40" x2="60" y2="300"/><line x1="140" y1="40" x2="140" y2="300"/>
+          <line x1="220" y1="40" x2="220" y2="300"/><line x1="380" y1="40" x2="380" y2="300"/>
+          <line x1="460" y1="40" x2="460" y2="300"/><line x1="540" y1="40" x2="540" y2="300"/>
+          <line x1="60" y1="60" x2="540" y2="60"/><line x1="60" y1="140" x2="540" y2="140"/>
+          <line x1="60" y1="220" x2="540" y2="220"/>
+        </g>
+        <g class="axis">
+          <line x1="60" y1="180" x2="560" y2="180"/>
+          <line x1="300" y1="30" x2="300" y2="315"/>
+        </g>
+        <path class="curve c1" style="color:var(--exp);stroke:var(--exp)"
+          d="M 120 300 C 220 40, 380 320, 480 60"/>
+        <path class="curve c2" style="color:var(--trig);stroke:var(--trig)"
+          d="M 130 60 Q 300 420 470 60"/>
+        <circle cx="212" cy="139" r="6" fill="var(--exp)" style="filter:drop-shadow(0 0 6px var(--exp))"/>
+        <circle cx="388" cy="221" r="6" fill="var(--exp)" style="filter:drop-shadow(0 0 6px var(--exp))"/>
+        <line x1="212" y1="139" x2="212" y2="180" stroke="var(--ink-faint)" stroke-width="1.4" stroke-dasharray="4 4"/>
+        <line x1="388" y1="221" x2="388" y2="180" stroke="var(--ink-faint)" stroke-width="1.4" stroke-dasharray="4 4"/>
+        <text x="180" y="118" fill="var(--exp)" font-family="IBM Plex Mono" font-size="14">f flat → f′ = 0</text>
+      </svg>
+      <div class="legend"><span><i style="background:var(--exp)"></i> f(x)</span>
+        <span><i style="background:var(--trig)"></i> f′(x) — crosses zero exactly where f flattens</span></div>
+    </figure>
+  </header>
+
+  <div class="section-tag"><b>Tutorial</b> · ~1000 words</div>
+
+  <h2 style="--accent:var(--exp)"><span class="k">01</span>The power rule</h2>
+  <p>The workhorse of the whole course:</p>
+  <p>$$\frac{d}{dx}\,x^n = n\,x^{n-1} \qquad \text{for any real } n$$</p>
+  <p>Bring the exponent down, knock the exponent down by one. So $\frac{d}{dx}x^7 = 7x^6$, $\frac{d}{dx}x = 1$, and $\frac{d}{dx}c = 0$ for any constant. The rule's real power comes from <em>fractional and negative</em> exponents: $\sqrt{x} = x^{1/2}$ differentiates to $\frac{1}{2}x^{-1/2} = \frac{1}{2\sqrt{x}}$, and $\frac{1}{x^3} = x^{-3}$ differentiates to $-3x^{-4}$. The single most valuable habit in this module: <strong>rewrite roots and reciprocals as powers before differentiating.</strong></p>
+
+  <h2 style="--accent:var(--trig)"><span class="k">02</span>Linearity: constants and sums</h2>
+  <p>Derivatives pass through constant multiples and sums untouched:</p>
+  <p>$$\frac{d}{dx}\left[c\,f(x)\right] = c\,f'(x) \qquad\qquad \frac{d}{dx}\left[f(x) \pm g(x)\right] = f'(x) \pm g'(x)$$</p>
+  <p>Together with the power rule this dispatches every polynomial term by term: $\frac{d}{dx}(5x^4 - 3x^2 + 2x - 9) = 20x^3 - 6x + 2$. Note what linearity does <em>not</em> cover — products and quotients. $\frac{d}{dx}[f \cdot g]$ is emphatically <strong>not</strong> $f' \cdot g'$, which is the single most common wrong answer in Calc 1. The next two rules exist precisely because of that.</p>
+
+  <h2 style="--accent:var(--poly)"><span class="k">03</span>The product rule</h2>
+  <p>$$\frac{d}{dx}\left[f(x)\,g(x)\right] = f'(x)\,g(x) + f(x)\,g'(x)$$</p>
+  <p>In words: <em>derivative of the first times the second, plus the first times the derivative of the second.</em> Example: for $y = x^2(x^3 - 2x)$,</p>
+  <p>$$y' = 2x\,(x^3 - 2x) + x^2\,(3x^2 - 2) = 5x^4 - 6x^2$$</p>
+  <p>(You could expand first and get the same thing — a good self-check while learning. Soon the factors won't expand, and the rule becomes mandatory.)</p>
+
+  <h2 style="--accent:var(--log)"><span class="k">04</span>The quotient rule</h2>
+  <p>$$\frac{d}{dx}\left[\frac{f(x)}{g(x)}\right] = \frac{f'(x)\,g(x) - f(x)\,g'(x)}{g(x)^2}$$</p>
+  <p>The mnemonic that sticks: "low d-high minus high d-low, over low squared." <strong>Order matters</strong> in the numerator — the subtraction makes it non-symmetric, and swapping the terms flips the sign. Example: $y = \dfrac{2x+1}{x-3}$ gives</p>
+  <p>$$y' = \frac{2(x-3) - (2x+1)(1)}{(x-3)^2} = \frac{-7}{(x-3)^2}$$</p>
+  <p>Before reaching for the quotient rule, check whether the fraction simplifies: $\frac{x^3 + 2x}{x} = x^2 + 2$ is a power-rule problem in disguise.</p>
+
+  <h2 style="--accent:var(--rat)"><span class="k">05</span>The chain rule</h2>
+  <p>The most important rule in calculus, for composite functions:</p>
+  <p>$$\frac{d}{dx}\,f\big(g(x)\big) = f'\big(g(x)\big)\cdot g'(x)$$
+  </p>
+  <p>In words: <em>derivative of the outside (leaving the inside alone), times the derivative of the inside.</em> For $y = (3x^2 + 5)^8$: the outside is $u^8$, the inside is $u = 3x^2 + 5$, so</p>
+  <p>$$y' = 8(3x^2+5)^7 \cdot 6x = 48x\,(3x^2+5)^7$$</p>
+  <p>This is exactly the inside/outside decomposition drilled in Modules 01's composition problems. In Leibniz notation the rule reads $\frac{dy}{dx} = \frac{dy}{du}\cdot\frac{du}{dx}$ — the $du$'s "cancel," which is why the notation is beloved. Nested compositions chain further: peel one layer at a time, outermost first.</p>
+
+  <h2 style="--accent:var(--exp)"><span class="k">06</span>Combining the rules</h2>
+  <p>Real problems stack rules. For $y = x^3\sqrt{2x + 1}$: product rule on the outside, chain rule inside the root:</p>
+  <p>$$y' = 3x^2\,(2x+1)^{1/2} + x^3\cdot\tfrac{1}{2}(2x+1)^{-1/2}\cdot 2 = 3x^2\sqrt{2x+1} + \frac{x^3}{\sqrt{2x+1}}$$</p>
+  <p>Strategy: identify the <em>outermost</em> structure first (is the whole thing a product? a quotient? a power of something?), apply that rule, and recurse inward. Writing $u = $ (inside) explicitly is not a crutch; it's what careful differentiation looks like.</p>
+
+  <h2 style="--accent:var(--trig)"><span class="k">07</span>Higher-order derivatives</h2>
+  <p>Differentiating $f'$ again gives the <strong>second derivative</strong> $f''(x)$, also written $\frac{d^2y}{dx^2}$; then $f'''$, $f^{(4)}$, and so on. Physically: if $s(t)$ is position, $s'$ is velocity and $s''$ is <strong>acceleration</strong>. Geometrically $f''$ measures how the slope itself is changing — the concavity story of Module 08. Each differentiation of a polynomial drops its degree by one, so a degree-$n$ polynomial has $f^{(n+1)} = 0$ identically.</p>
+
+  <h2 style="--accent:var(--poly)"><span class="k">08</span>Rewriting before differentiating</h2>
+  <p>The best students do algebra <em>first</em> so the calculus is easy. Three habitual rewrites: (1) roots and reciprocals to powers, $\frac{4}{\sqrt[3]{x}} = 4x^{-1/3}$; (2) split fractions with single-term denominators, $\frac{x^2 + 3x - 1}{x} = x + 3 - x^{-1}$, avoiding the quotient rule entirely; (3) expand cheap products, $(x+2)(x-5) = x^2 - 3x - 10$, when expansion is faster than the product rule. One minute of rewriting routinely saves five minutes of rule-stacking — and several sign errors.</p>
+
+  <div class="callout">
+    <p style="margin:0"><b>Rule selector.</b> Sum of terms → term-by-term power rule. Two things multiplied → product rule. A genuine fraction → quotient rule (after checking it doesn't simplify). Anything <em>inside</em> anything → chain rule, outermost layer first. And always: rewrite roots and reciprocals as powers before you start.</p>
+  </div>
+
+  <div class="section-tag"><b>Practice</b> · 20 problems · tap to reveal each solution</div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">1</div><div class="q-body">
+      <p>Differentiate $f(x) = x^7$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$f'(x) = 7x^6$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">2</div><div class="q-body">
+      <p>Differentiate $f(x) = 5x^4 - 3x^2 + 2x - 9$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$f'(x) = 20x^3 - 6x + 2$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">3</div><div class="q-body">
+      <p>Differentiate $f(x) = \sqrt{x} + \dfrac{1}{x^3}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Rewrite: $x^{1/2} + x^{-3}$. Then $f'(x) = \dfrac{1}{2}x^{-1/2} - 3x^{-4} = \dfrac{1}{2\sqrt{x}} - \dfrac{3}{x^4}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">4</div><div class="q-body">
+      <p>Differentiate $f(x) = \dfrac{6}{\sqrt[3]{x}} - 4x^{5/2}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Rewrite: $6x^{-1/3} - 4x^{5/2}$. Then $f'(x) = -2x^{-4/3} - 10x^{3/2}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">5</div><div class="q-body">
+      <p>Use the product rule: $y = x^2(x^3 - 2x)$. Verify by expanding first.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Product rule: $2x(x^3 - 2x) + x^2(3x^2 - 2) = 5x^4 - 6x^2$.</p>
+      <p>Expanded: $y = x^5 - 2x^3 \Rightarrow y' = 5x^4 - 6x^2$. ✓ Match.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">6</div><div class="q-body">
+      <p>Differentiate $y = (x^2 + 1)(2x^3 - x)$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$y' = 2x(2x^3 - x) + (x^2+1)(6x^2 - 1) = 4x^4 - 2x^2 + 6x^4 + 5x^2 - 1 = 10x^4 + 3x^2 - 1$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">7</div><div class="q-body">
+      <p>Differentiate $y = \dfrac{2x + 1}{x - 3}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$y' = \dfrac{2(x-3) - (2x+1)(1)}{(x-3)^2} = \dfrac{-7}{(x-3)^2}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">8</div><div class="q-body">
+      <p>Differentiate $y = \dfrac{x^2}{x^2 + 4}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$y' = \dfrac{2x(x^2+4) - x^2(2x)}{(x^2+4)^2} = \dfrac{8x}{(x^2+4)^2}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">9</div><div class="q-body">
+      <p>Trap check: differentiate $y = \dfrac{x^3 + 2x}{x}$ the smart way.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Simplify first: $y = x^2 + 2$ (for $x \ne 0$). So $y' = 2x$. No quotient rule needed.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">10</div><div class="q-body">
+      <p>Use the chain rule: $y = (3x^2 + 5)^8$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$y' = 8(3x^2+5)^7 \cdot 6x = 48x(3x^2+5)^7$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">11</div><div class="q-body">
+      <p>Differentiate $y = \sqrt{x^2 + 4}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$y = (x^2+4)^{1/2} \Rightarrow y' = \dfrac{1}{2}(x^2+4)^{-1/2}\cdot 2x = \dfrac{x}{\sqrt{x^2+4}}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">12</div><div class="q-body">
+      <p>Differentiate $y = \dfrac{1}{(2x - 7)^4}$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$y = (2x-7)^{-4} \Rightarrow y' = -4(2x-7)^{-5}\cdot 2 = \dfrac{-8}{(2x-7)^5}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">13</div><div class="q-body">
+      <p>Double chain: differentiate $y = \left(1 + \sqrt{x}\right)^3$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$y' = 3\left(1+\sqrt{x}\right)^2 \cdot \dfrac{1}{2\sqrt{x}} = \dfrac{3(1+\sqrt{x})^2}{2\sqrt{x}}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">14</div><div class="q-body">
+      <p>Product + chain: differentiate $y = x^2(2x + 1)^5$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$y' = 2x(2x+1)^5 + x^2 \cdot 5(2x+1)^4 \cdot 2 = 2x(2x+1)^4\left[(2x+1) + 5x\right] = 2x(2x+1)^4(7x+1)$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">15</div><div class="q-body">
+      <p>Quotient + chain: differentiate $y = \left(\dfrac{x}{x+1}\right)^3$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Inside derivative: $\dfrac{(x+1) - x}{(x+1)^2} = \dfrac{1}{(x+1)^2}$.</p>
+      <p>$y' = 3\left(\dfrac{x}{x+1}\right)^2 \cdot \dfrac{1}{(x+1)^2} = \dfrac{3x^2}{(x+1)^4}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">16</div><div class="q-body">
+      <p>Find $f''(x)$ for $f(x) = x^4 - 6x^2 + 3x$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$f'(x) = 4x^3 - 12x + 3$; $\;f''(x) = 12x^2 - 12$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">17</div><div class="q-body">
+      <p>Find the tangent line to $y = x^3 - 4x + 1$ at $x = 2$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$y(2) = 8 - 8 + 1 = 1$; $y' = 3x^2 - 4 \Rightarrow y'(2) = 8$.</p>
+      <p>Tangent: $y = 1 + 8(x - 2) = 8x - 15$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--exp)">
+    <div class="q-head"><div class="q-num">18</div><div class="q-body">
+      <p>Position is $s(t) = t^3 - 6t^2 + 9t$ m. Find velocity and acceleration at $t = 1$, and all times when the object is momentarily stopped.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$v = 3t^2 - 12t + 9 = 3(t-1)(t-3)$; $a = 6t - 12$.</p>
+      <p>$v(1) = 0$ m/s, $a(1) = -6$ m/s². Stopped when $v = 0$: $t = 1$ and $t = 3$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--log)">
+    <div class="q-head"><div class="q-num">19</div><div class="q-body">
+      <p>Given $f(2) = 3$, $f'(2) = -1$, $g(2) = 5$, $g'(2) = 4$, evaluate $(fg)'(2)$ and $\left(\dfrac{f}{g}\right)'(2)$.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$(fg)'(2) = f'(2)g(2) + f(2)g'(2) = (-1)(5) + (3)(4) = 7$.</p>
+      <p>$\left(\dfrac{f}{g}\right)'(2) = \dfrac{(-1)(5) - (3)(4)}{25} = -\dfrac{17}{25}$.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--trig)">
+    <div class="q-head"><div class="q-num">20</div><div class="q-body">
+      <p>Challenge: find all points where $y = \dfrac{x}{x^2 + 1}$ has a horizontal tangent.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>$y' = \dfrac{(x^2+1) - x(2x)}{(x^2+1)^2} = \dfrac{1 - x^2}{(x^2+1)^2} = 0 \Rightarrow x = \pm 1$.</p>
+      <p>Points: $\left(1, \tfrac{1}{2}\right)$ and $\left(-1, -\tfrac{1}{2}\right)$.</p>
+    </div></details>
+  </div>
+
+  <a class="next" href="#" onclick="return false;">
+    <div>
+      <div class="lbl">Next module</div>
+      <div class="name">06 · Derivatives of Special Functions</div>
+    </div>
+    <div class="arrow">→</div>
+  </a>
+
+</main>
+
+<script>
+  window.addEventListener("DOMContentLoaded", function(){
+    function render(){
+      if (window.renderMathInElement){
+        renderMathInElement(document.body, {
+          delimiters:[
+            {left:"$$", right:"$$", display:true},
+            {left:"$",  right:"$",  display:false},
+            {left:"\\[", right:"\\]", display:true},
+            {left:"\\(", right:"\\)", display:false}
+          ],
+          throwOnError:false
+        });
+      } else {
+        setTimeout(render, 60);
+      }
+    }
+    render();
+  });
+</script>
+</body>
+</html>
