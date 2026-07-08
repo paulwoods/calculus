@@ -56,8 +56,8 @@ Every module file follows the same top-to-bottom skeleton; match it when editing
 - **No shared assets.** Styles, tokens, and the KaTeX bootstrap are duplicated per file by design.
   A change to "the CSS" means editing each file, not one central place.
 
-## Known gap
+## Navigation
 
-Every module's bottom `.next` card is a dead placeholder (`href="#" onclick="return false;"`) —
-modules do not actually link to each other or back to the index. Only `calc1_00_index.html`
-provides working navigation. Wiring these up is a natural improvement if asked.
+Each module's bottom `.next` card links to the following module (`01 → 02 → … → 10`), and module
+10's card links back to `calc1_00_index.html`. The `.name` inside each card is the human-readable
+label for its target; keep it in sync with the `href` when reordering or renaming modules.
