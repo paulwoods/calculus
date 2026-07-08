@@ -19,9 +19,9 @@ xdg-open src/calc1_00_index.html
 
 A network connection is required at view time: fonts and the KaTeX math renderer load from CDNs
 (Google Fonts + `cdnjs.cloudflare.com/.../KaTeX/0.16.9`). For a local server, run
-`python3 -m http.server -d src`, or use Docker (`docker compose up -d`, then
-http://localhost:8080/) — the Dockerfile serves `src/` via nginx with `calc1_00_index.html` as
-the `/` default.
+`python3 -m http.server -d src`, or use Docker
+(`docker compose -f deploy/docker-compose.yaml up -d`, then http://localhost:8080/) — the
+Dockerfile serves `src/` via nginx with `calc1_00_index.html` as the `/` default.
 
 ## File layout
 
