@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Graph Night — Starter</title>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- KaTeX (optional — delete if your project has no math) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+
+<!-- The design system -->
+<link rel="stylesheet" href="../css/graph-night.css">
+
+<!-- Per-page theme: override the knobs here -->
+<style>
+  :root{
+    --glow: rgba(56,189,248,0.10);
+    --dot-color: var(--poly);
+    --g1: var(--poly); --g2: var(--trig); --g3: var(--exp);
+    --next-color: var(--exp);
+  }
+</style>
+</head>
+<body>
+
+<div class="rail">
+  <span class="dot"></span>
+  <b>Graph Night</b> · Starter · Component Demo
+</div>
+
+<main>
+
+  <header class="hero">
+    <div class="eyebrow"><span class="num">00</span> Starter Template</div>
+    <h1>Every Component,<br>One Page</h1>
+    <p class="lede">Copy this file, keep the pieces you need, delete the rest. Theme knobs live in the inline &lt;style&gt; block above.</p>
+
+    <figure class="plot">
+      <svg viewBox="0 0 600 240" role="img" aria-label="Demo plot: two curves on a grid.">
+        <g class="tick">
+          <line x1="60" y1="30" x2="60" y2="200"/><line x1="180" y1="30" x2="180" y2="200"/>
+          <line x1="300" y1="30" x2="300" y2="200"/><line x1="420" y1="30" x2="420" y2="200"/>
+          <line x1="540" y1="30" x2="540" y2="200"/>
+          <line x1="60" y1="60" x2="540" y2="60"/><line x1="60" y1="130" x2="540" y2="130"/>
+        </g>
+        <g class="axis">
+          <line x1="60" y1="200" x2="560" y2="200"/>
+          <line x1="80" y1="20" x2="80" y2="212"/>
+        </g>
+        <path class="curve c1" style="color:var(--poly);stroke:var(--poly)"
+          d="M 90 190 C 200 60, 340 60, 530 40"/>
+        <path class="curve c2" style="color:var(--log);stroke:var(--log)"
+          d="M 90 60 C 220 190, 380 120, 530 170"/>
+      </svg>
+      <div class="legend">
+        <span><i style="background:var(--poly)"></i> series one</span>
+        <span><i style="background:var(--log)"></i> series two</span>
+      </div>
+    </figure>
+  </header>
+
+  <div class="section-tag"><b>Content</b> · section scaffolding</div>
+
+  <h2 style="--accent:var(--poly)"><span class="k">01</span>An accented section heading</h2>
+  <p>Body copy in IBM Plex Sans. <strong>Bold reads as brightness.</strong> Inline math works if KaTeX is loaded: $e^{i\pi} + 1 = 0$. Display math too:</p>
+  <p>$$\int_a^b f(x)\,dx = F(b) - F(a)$$</p>
+
+  <h2 style="--accent:var(--rat)"><span class="k">02</span>Lists</h2>
+  <ul class="clean">
+    <li style="--fam:var(--poly)"><span class="fam">Accent-tagged item</span> — set <code>--fam</code> per row.</li>
+    <li style="--fam:var(--exp)"><span class="fam">Another category</span> — the left border and label share the hue.</li>
+  </ul>
+  <ol class="rules">
+    <li><strong>Numbered rules</strong> use a plain ordered list.</li>
+    <li>Keep each item to a sentence or two.</li>
+  </ol>
+
+  <div class="callout">
+    <p style="margin:0"><b>Callout.</b> One key idea per page gets this treatment — don't dilute it.</p>
+  </div>
+
+  <div class="section-tag"><b>Interactive</b> · q-cards with reveal</div>
+
+  <div class="q" style="--qc:var(--poly)">
+    <div class="q-head"><div class="q-num">1</div><div class="q-body">
+      <p>A prompt, question, or exercise goes here.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>Hidden until tapped. Native <code>&lt;details&gt;</code> — zero JavaScript.</p>
+    </div></details>
+  </div>
+
+  <div class="q" style="--qc:var(--rat)">
+    <div class="q-head"><div class="q-num">2</div><div class="q-body">
+      <p>Cycle <code>--qc</code> through the five accents in order.</p></div></div>
+    <details><summary>Solution</summary><div class="solution">
+      <p>poly → rat → exp → log → trig, then repeat.</p>
+    </div></details>
+  </div>
+
+  <div class="section-tag"><b>Index</b> · stats, grid, cards</div>
+
+  <div class="stats">
+    <div class="stat"><b>5</b> accents</div>
+    <div class="stat"><b>3</b> fonts</div>
+    <div class="stat"><b>0</b> build steps</div>
+  </div>
+
+  <div class="grid" style="margin-top:1rem">
+    <a class="card" style="--c:var(--trig)" href="#">
+      <div class="card-top"><div class="badge">A</div>
+        <div><h3>Card Title</h3><div class="kind">Category</div></div></div>
+      <p>Card description — a sentence or two of secondary text.</p>
+      <div class="go">Open →</div>
+    </a>
+    <a class="card" style="--c:var(--exp)" href="#">
+      <div class="card-top"><div class="badge">B</div>
+        <div><h3>Second Card</h3><div class="kind">Category</div></div></div>
+      <p>Set <code>--c</code> per card for the badge, edge stripe, and link.</p>
+      <div class="go">Open →</div>
+    </a>
+  </div>
+
+  <a class="next" href="#" onclick="return false;">
+    <div>
+      <div class="lbl">Next page</div>
+      <div class="name">Footer Navigation Card</div>
+    </div>
+    <div class="arrow">→</div>
+  </a>
+
+</main>
+
+<!-- KaTeX auto-render (delete with the KaTeX includes if unused) -->
+<script>
+  window.addEventListener("DOMContentLoaded", function(){
+    function render(){
+      if (window.renderMathInElement){
+        renderMathInElement(document.body, {
+          delimiters:[
+            {left:"$$", right:"$$", display:true},
+            {left:"$",  right:"$",  display:false}
+          ],
+          throwOnError:false
+        });
+      } else { setTimeout(render, 60); }
+    }
+    render();
+  });
+</script>
+</body>
+</html>
