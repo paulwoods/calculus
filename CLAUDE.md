@@ -11,22 +11,27 @@ self-contained HTML document with inline `<style>` and (for modules) an inline K
 
 ## Viewing / "running"
 
-Open any file directly in a browser — no build or server step:
+The pages live in `src/`. Open any file directly in a browser — no build or server step:
 
 ```
-xdg-open calc1_00_index.html
+xdg-open src/calc1_00_index.html
 ```
 
 A network connection is required at view time: fonts and the KaTeX math renderer load from CDNs
-(Google Fonts + `cdnjs.cloudflare.com/.../KaTeX/0.16.9`). If you need a local server for testing
-relative links, `python3 -m http.server` from the repo root works.
+(Google Fonts + `cdnjs.cloudflare.com/.../KaTeX/0.16.9`). For a local server, run
+`python3 -m http.server -d src`, or use Docker (`docker compose up -d`, then
+http://localhost:8080/) — the Dockerfile serves `src/` via nginx with `calc1_00_index.html` as
+the `/` default.
 
 ## File layout
 
-- `calc1_00_index.html` — the landing/navigation hub. Links out to all ten modules and is the
+All course pages live in `src/`; the repo root holds tooling (`Dockerfile`, `docker-compose.yaml`,
+`CLAUDE.md`).
+
+- `src/calc1_00_index.html` — the landing/navigation hub. Links out to all ten modules and is the
   only page that wires cross-file navigation.
-- `calc1_01_*.html` … `calc1_10_*.html` — the ten course modules, numbered in intended study
-  order. The numeric prefix is the module's position; ordering is pedagogically load-bearing
+- `src/calc1_01_*.html` … `src/calc1_10_*.html` — the ten course modules, numbered in intended
+  study order. The numeric prefix is the module's position; ordering is pedagogically load-bearing
   (see the index's "How to use this course" section — each module's tools feed the next).
 
 ## Module anatomy
