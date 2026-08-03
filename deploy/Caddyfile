@@ -1,0 +1,13 @@
+calculus.mrpaulwoods.com {
+	# Reverse-proxy to the busybox httpd container (service name "web", port 80).
+	reverse_proxy web:80
+
+	encode gzip zstd
+
+	# Static course pages never change per-request; let clients cache them.
+	header Cache-Control "public, max-age=3600"
+
+	log {
+		output stdout
+	}
+}
