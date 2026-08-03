@@ -40,7 +40,9 @@ Every module file follows the same top-to-bottom skeleton; match it when editing
 
 1. `:root` CSS custom-property block — the design tokens. **This block is copy-pasted into every
    file** (there is no shared stylesheet). Keep it in sync across files when changing the palette.
-2. KaTeX `<link>`/`<script defer>` includes + Google Fonts preconnect.
+2. `<link rel="icon">` favicon immediately after `</title>` — an inline `data:image/svg+xml` URI
+   (integral sign, `--poly`→`--trig`→`--exp` gradient on `--bg`), byte-identical in every file
+   including the index. Then KaTeX `<link>`/`<script defer>` includes + Google Fonts preconnect.
 3. `.rail` sticky header → `.hero` (eyebrow with module number, gradient `h1`, `.lede`, and
    usually an inline hand-coded `<svg class="plot">` illustration).
 4. **Tutorial** section (`.section-tag` "Tutorial · ~1000 words") — numbered `h2` sub-sections,
@@ -58,8 +60,9 @@ Every module file follows the same top-to-bottom skeleton; match it when editing
   `--poly` (cyan), `--rat` (purple), `--exp` (amber), `--log` (rose), `--trig` (green). Each
   module picks an accent for its `.rail .dot` and `h1` gradient; practice-problem cards cycle
   through the five families via the `--qc` variable; tutorial `h2`s set `--accent`.
-- **No shared assets.** Styles, tokens, and the KaTeX bootstrap are duplicated per file by design.
-  A change to "the CSS" means editing each file, not one central place.
+- **No shared assets.** Styles, tokens, the favicon data URI, and the KaTeX bootstrap are
+  duplicated per file by design. A change to "the CSS" means editing each file, not one central
+  place.
 
 ## Navigation
 
