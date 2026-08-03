@@ -10,7 +10,7 @@ rendered client-side with KaTeX; there is no build step for the content itself.
 | --- | --- |
 | `src/calc1_00_index.html` | Landing page and navigation hub, links to all ten modules. |
 | `src/calc1_01_*.html` … `src/calc1_10_*.html` | The ten course modules, in study order. |
-| `Dockerfile` | Serves `src/` with nginx; `/` defaults to the course index. |
+| `Dockerfile` | Serves `src/` with busybox httpd; `/` defaults to the course index. |
 | `deploy/docker-compose.yaml` | Runs the image locally on port 8080. |
 | `.github/workflows/docker-publish.yml` | CI: version-tags each push and publishes to Docker Hub. |
 | `docs/graph-night-design-system/` | Design-system reference used by the pages. |
@@ -37,8 +37,8 @@ docker compose -f deploy/docker-compose.yaml up -d   # then open http://localhos
 docker compose -f deploy/docker-compose.yaml down
 ```
 
-The image is built from the root `Dockerfile`, copies `src/*.html` into nginx, and symlinks the
-index so `http://localhost:8080/` loads the course.
+The image is built from the root `Dockerfile` (busybox httpd, ~3 MB), copies `src/*.html` into
+the web root, and symlinks the index so `http://localhost:8080/` loads the course.
 
 ## Continuous deployment
 
