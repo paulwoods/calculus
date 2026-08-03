@@ -1,0 +1,25 @@
+services:
+  web:
+    image: paulwoods/calculus:latest
+    restart: unless-stopped
+    # No host port published — only Caddy talks to it, over the internal network.
+    expose:
+      - "80"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"   # HTTP/3
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data     # certificates + ACME account (must persist!)
+      - caddy_config:/config
+    depends_on:
+      - web
+
+volumes:
+  caddy_data:
+  caddy_config:
