@@ -1,0 +1,11 @@
+# OS cruft
+.DS_Store
+Thumbs.db
+
+# Editor scratch files
+*~
+*.swp
+.vscode/
+
+# Note: .idea/ is intentionally tracked; the IDE's own .idea/.gitignore
+# excludes the per-user workspace.xml.

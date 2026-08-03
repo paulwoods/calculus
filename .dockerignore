@@ -1,0 +1,4 @@
+# The image only needs the course pages (see Dockerfile: COPY src/*.html).
+# Exclude everything, then re-include just those.
+*
+!src/*.html
